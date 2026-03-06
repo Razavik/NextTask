@@ -1,0 +1,148 @@
+.tabsContainer {
+	position: relative;
+	overflow: hidden;
+	border-radius: 12px;
+	margin-bottom: 32px;
+}
+
+.tabs {
+	display: flex;
+	gap: 12px;
+	padding: 6px;
+	border-radius: 12px;
+	border: 1px solid var(--input-border-color);
+	position: relative;
+	overflow-x: auto;
+	width: max-content;
+	max-width: 100%;
+}
+
+.tabs::-webkit-scrollbar {
+	height: 4px;
+}
+
+.tabs::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-primary);
+	border-radius: 2px;
+}
+
+.tabs::-webkit-scrollbar-thumb:hover {
+	background: var(--scrollbar-primary-hover);
+}
+
+.tab {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 16px;
+	background: transparent;
+	border: none;
+	border-radius: 8px;
+	color: var(--text-color-soft);
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+		transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	justify-content: center;
+	position: relative;
+	z-index: 1;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	position: relative;
+	width: 200px;
+	flex-shrink: 0;
+}
+
+.tab::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(
+		135deg,
+		var(--hover-bg-color) 0%,
+		rgba(255, 255, 255, 0.1) 100%
+	);
+	border-radius: 8px;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	z-index: -1;
+}
+
+.tab:hover:not(.disabled) {
+	transform: translateY(-1px);
+}
+
+.tab:hover:not(.disabled):not(.active) {
+	color: var(--text-color);
+}
+
+.tab:hover:not(.disabled):not(.active)::before {
+	opacity: 1;
+}
+
+.tab.active {
+	background: linear-gradient(135deg, var(--primary-color) 0%, #b91c8c 100%);
+	color: white;
+}
+
+.tab.active::before {
+	opacity: 0;
+}
+
+.tab.active:hover {
+	box-shadow: 0 10px 30px rgba(158, 26, 176, 0.1);
+	transform: translateY(-2px);
+	color: var(--text-on-accent);
+}
+
+.tab.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.tab.disabled:hover {
+	transform: none;
+	box-shadow: none;
+}
+
+.icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.label {
+	white-space: nowrap;
+}
+
+.tab.active .badge {
+	background-color: var(--nav-bg-color);
+}
+
+/* Индикатор (badge) для таба */
+.badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 6px;
+	margin-left: -5px;
+	border-radius: 50%;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--chip-text-on-accent, #fff);
+	background: var(--primary-color);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}

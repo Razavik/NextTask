@@ -1,0 +1,452 @@
+.container {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	background: linear-gradient(
+		135deg,
+		var(--bg-color) 0%,
+		var(--nav-bg-color) 100%
+	);
+}
+
+/* --- Переносимые стили приглашений из task-priority.css --- */
+/* .invitationsContainer {
+	margin-top: 24px;
+}
+.createInvitationForm {
+	background: var(--card-bg);
+	border-radius: var(--radius);
+	padding: 24px;
+	margin-bottom: 32px;
+	box-shadow: var(--shadow);
+}
+.createInvitationFormTitle {
+	margin-bottom: 20px;
+	font-size: 22px;
+	color: var(--primary-color);
+	font-weight: 600;
+}
+.createInvitationFormForm {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	background: none !important;
+}
+.createInvitationFormInput {
+	width: 100%;
+	font-size: 17px;
+	padding: 14px 16px;
+	border-radius: var(--radius);
+	border: 2px solid var(--input-border-color);
+	background: var(--input-bg-color);
+	color: var(--text-color);
+	transition: border 0.2s, box-shadow 0.2s;
+}
+.createInvitationFormInput:focus {
+	border-color: var(--primary-color);
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(158, 26, 176, 0.13);
+}
+.createInvitationFormButton {
+	background: var(--primary-color);
+	color: white;
+	border: none;
+	border-radius: var(--radius);
+	padding: 12px 24px;
+	font-size: 16px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+	margin-top: 3px;
+	width: 220px;
+	align-self: flex-start;
+}
+.createInvitationFormButton:hover {
+	background: var(--primary-hover);
+	transform: translateY(-2px);
+}
+.invitationsListTitle {
+	margin-bottom: 16px;
+	font-size: 22px;
+}
+.invitationsTable {
+	width: 100%;
+	border-collapse: collapse;
+	border-radius: var(--radius);
+	overflow: hidden;
+	background: var(--card-bg);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.invitationsTableTh,
+.invitationsTableTd {
+	padding: 12px 16px;
+	text-align: left;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.invitationsTableTh {
+	background: rgba(30, 28, 35, 0.7);
+	color: #a89bc2;
+	font-weight: 600;
+	padding-top: 14px;
+	padding-bottom: 14px;
+}
+.invitationLink {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.invitationUrl {
+	flex: 1;
+	background: rgba(20, 20, 30, 0.5) !important;
+	border: 1px solid #383647;
+	padding: 6px 10px !important;
+	border-radius: 6px;
+	color: #a89bc2;
+	font-size: 13px;
+	margin: 0 !important;
+}
+.copyBtn {
+	background: var(--primary-color);
+	color: white;
+	border: none;
+	border-radius: 6px;
+	padding: 6px 12px;
+	font-size: 13px;
+	cursor: pointer;
+	transition: all 0.15s;
+	white-space: nowrap;
+}
+.copyBtn:hover {
+	background: var(--primary-hover);
+	transform: translateY(-2px);
+}
+.unlimited {
+	color: #a5dba1;
+}
+.expiredLabel {
+	display: inline-block;
+	background: rgba(255, 100, 100, 0.2);
+	color: #ff6b6b;
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	margin-left: 8px;
+}
+.deleteInvitationBtn {
+	background: transparent;
+	border: none;
+	color: #ff6b6b;
+	padding: 6px;
+	border-radius: 4px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.15s;
+}
+.deleteInvitationBtn:hover {
+	background: rgba(255, 100, 100, 0.1);
+	transform: translateY(-2px);
+} */
+/* --- Конец переноса --- */
+
+.card {
+	background: var(--card-bg);
+	border-radius: 16px;
+	padding: 48px 40px;
+	box-shadow:
+		0 20px 60px rgba(0, 0, 0, 0.15),
+		0 8px 24px rgba(0, 0, 0, 0.08);
+	text-align: center;
+	width: 100%;
+	border: 1px solid var(--input-border-color);
+	backdrop-filter: blur(10px);
+	animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+	from {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.title {
+	color: var(--text-color);
+	margin-bottom: 16px;
+	font-size: 35px;
+	font-weight: 700;
+	background: linear-gradient(
+		135deg,
+		var(--primary-color),
+		var(--primary-hover)
+	);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.subtitle {
+	color: var(--text-color-soft);
+	margin-bottom: 40px;
+	font-size: 18px;
+	font-weight: 400;
+	line-height: 1.6;
+}
+
+.workspaceInfo {
+	padding: 32px;
+	background: var(--nav-bg-color);
+	border-radius: 12px;
+	margin-bottom: 40px;
+	border: 1px solid var(--input-border-color);
+	position: relative;
+	overflow: hidden;
+}
+.workspaceInfo::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: linear-gradient(
+		90deg,
+		var(--primary-color),
+		var(--primary-hover)
+	);
+}
+
+.workspaceName {
+	font-size: 26px;
+	font-weight: 700;
+	margin-bottom: 13px;
+	color: var(--text-color);
+}
+
+.workspaceDescription {
+	color: var(--text-color-soft);
+	margin-bottom: 24px;
+	line-height: 1.5;
+}
+
+.workspaceStats {
+	display: flex;
+	justify-content: center;
+	gap: 32px;
+	margin-top: 16px;
+}
+
+.statItem {
+	text-align: center;
+}
+
+.statValue {
+	font-size: 32px;
+	font-weight: 800;
+	color: var(--primary-color);
+	margin-bottom: 3px;
+}
+
+.statLabel {
+	font-size: 14px;
+	color: var(--text-color-soft);
+	font-weight: 500;
+}
+
+.userInfo {
+	margin-bottom: 40px;
+	padding: 24px;
+	border: 1px solid var(--input-border-color);
+	border-radius: 10px;
+	background: var(--hover-bg-color);
+}
+
+.inviter {
+	font-weight: 600;
+	color: var(--primary-color);
+}
+
+.actionButtons {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	width: 100%;
+	max-width: 300px;
+	margin: 0 auto;
+}
+
+.acceptButton {
+	background: linear-gradient(
+		135deg,
+		var(--primary-color),
+		var(--primary-hover)
+	);
+	color: white;
+	border: none;
+	border-radius: 10px;
+	padding: 16px 32px;
+	font-size: 18px;
+	font-weight: 600;
+	cursor: pointer;
+	width: 100%;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 15px rgba(158, 26, 176, 0.3);
+	position: relative;
+	overflow: hidden;
+}
+.acceptButton::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		rgba(255, 255, 255, 0.2),
+		transparent
+	);
+	transition: left 0.5s;
+}
+.acceptButton:hover::before {
+	left: 100%;
+}
+.acceptButton:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 25px rgba(158, 26, 176, 0.4);
+}
+
+.declineButton {
+	background: transparent;
+	color: var(--text-color-soft);
+	border: 1px solid var(--input-border-color);
+	border-radius: 10px;
+	padding: 16px 32px;
+	font-size: 16px;
+	font-weight: 500;
+	cursor: pointer;
+	width: 100%;
+	transition: all 0.3s ease;
+}
+.declineButton:hover {
+	background: var(--hover-bg-color);
+	border-color: var(--primary-color);
+	color: var(--text-color);
+	transform: translateY(-1px);
+}
+
+.loadingContainer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 400px;
+}
+
+.loadingText {
+	margin-top: 16px;
+	color: var(--text-color);
+}
+
+.error {
+	color: #dc3545;
+	margin-bottom: 16px;
+	padding: 12px;
+	border-radius: 4px;
+	background-color: rgba(220, 53, 69, 0.1);
+}
+
+.success {
+	color: #28a745;
+	margin-bottom: 16px;
+	padding: 12px;
+	border-radius: 4px;
+	background-color: rgba(40, 167, 69, 0.1);
+}
+
+.expired {
+	margin: 32px 0;
+	padding: 32px;
+	background-color: #f8f9fa;
+	border-radius: 8px;
+	text-align: center;
+}
+
+.expiredIcon {
+	font-size: 48px;
+	color: #6c757d;
+	margin-bottom: 16px;
+}
+
+.returnLink {
+	display: inline-block;
+	margin-top: 24px;
+	color: var(--primary-color);
+	text-decoration: none;
+}
+
+.returnLink:hover {
+	text-decoration: underline;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+	.container {
+		padding: 16px 8px;
+	}
+
+	.card {
+		padding: 32px 24px;
+		border-radius: 12px;
+		margin: 0 8px;
+	}
+
+	.title {
+		font-size: 29px;
+	}
+
+	.workspaceStats {
+		gap: 16px;
+	}
+
+	.statValue {
+		font-size: 26px;
+	}
+
+	.actionButtons {
+		gap: 13px;
+	}
+}
+
+@media (max-width: 480px) {
+	.card {
+		padding: 24px 16px;
+	}
+
+	.title {
+		font-size: 26px;
+	}
+
+	.workspaceInfo {
+		padding: 24px;
+	}
+
+	.workspaceStats {
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.acceptButton,
+	.declineButton {
+		padding: 14px 24px;
+		font-size: 16px;
+	}
+}

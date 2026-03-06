@@ -1,0 +1,110 @@
+.button {
+	border: none;
+	border-radius: var(--radius);
+	cursor: pointer;
+	font-weight: 600;
+	transition:
+		background 0.2s,
+		transform 0.13s,
+		box-shadow 0.2s,
+		filter 0.2s;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	text-wrap: nowrap;
+}
+
+/* sizes */
+.sm {
+	padding: 8px 14px;
+	font-size: 0.9rem;
+}
+.md {
+	padding: 12px 20px;
+	font-size: 1rem;
+}
+
+/* variants */
+.primary {
+	background: var(--brand-gradient);
+	color: var(--text-on-accent);
+	overflow: hidden;
+	position: relative;
+}
+
+.primary:hover:not(:disabled) {
+	filter: brightness(1.03);
+	transform: translateY(-1px);
+}
+
+.primary:not(:disabled)::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in srgb, var(--text-on-accent) 20%, transparent),
+		transparent
+	);
+	transition: left 0.5s;
+}
+
+.primary:hover:not(:disabled)::before {
+	left: 100%;
+}
+
+.ghost {
+	background: var(--surface-hover-subtle);
+	color: var(--text-color);
+	box-shadow: none;
+	border: 1px solid var(--border-muted);
+}
+
+.ghost:hover:not(:disabled) {
+	background: color-mix(
+		in srgb,
+		var(--surface-hover-subtle) 70%,
+		var(--primary-color) 6%
+	);
+}
+
+.button:disabled {
+	/* Общие стили disabled для заметности в светлой теме */
+	background: color-mix(
+		in srgb,
+		var(--nav-bg-color) 90%,
+		var(--text-color) 10%
+	);
+	color: var(--text-color-muted);
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: none;
+	opacity: 1;
+}
+
+/* Усиленный фон и рамка для ghost-disabled */
+.ghost:disabled {
+	background: color-mix(
+		in srgb,
+		var(--nav-bg-color) 85%,
+		var(--text-color) 15%
+	);
+	color: var(--text-color-muted);
+	border: 1px solid var(--input-border-color);
+}
+
+/* Приглушаем primary, сохраняя читаемость текста */
+.primary:disabled {
+	background: color-mix(
+		in srgb,
+		var(--primary-color) 35%,
+		var(--nav-bg-color)
+	);
+	color: var(--text-on-accent);
+	filter: saturate(85%);
+}

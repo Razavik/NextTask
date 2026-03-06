@@ -1,0 +1,416 @@
+:root {
+	/* Палитра базовых цветов */
+	--clr-purple-900: #581c87;
+	--clr-purple-800: #6b21a8;
+	--clr-purple-700: #7e22ce;
+	--clr-purple-600: #9333ea;
+	--clr-purple-500: #a855f7;
+	--clr-purple-400: #c084fc;
+	--clr-purple-300: #d8b4fe;
+	--clr-purple-200: #e9d5ff;
+
+	--clr-cyan-700: #0e7490;
+	--clr-cyan-500: #06b6d4;
+	--clr-cyan-300: #67e8f9;
+	--clr-cyan-200: #a5f3fc;
+
+	--clr-blue-700: #1d4ed8;
+	--clr-blue-500: #3b82f6;
+	--clr-blue-400: #60a5fa;
+	--clr-blue-300: #93c5fd;
+	--clr-blue-200: #bfdbfe;
+
+	--clr-green-600: #16a34a;
+	--clr-green-500: #22c55e;
+
+	--clr-rose-700: #be123c;
+	--clr-rose-500: #ef4444;
+	--clr-rose-300: #fda4af;
+	--clr-rose-200: #fecdd3;
+
+	--clr-amber-800: #92400e;
+	--clr-amber-600: #d97706;
+	--clr-amber-500: #f59e0b;
+	--clr-amber-400: #fbbf24;
+	--clr-amber-300: #fde68a;
+
+	--clr-pink-950: #310e33;
+	--clr-pink-900: #9e1ab0;
+	--clr-pink-800: #7a147d;
+	--clr-pink-700: #661069;
+	--clr-pink-600: #8b1897;
+	--clr-pink-500: #b347bf;
+
+	--clr-neutral-50: #f9fafb;
+	--clr-neutral-100: #f3f4f6;
+	--clr-neutral-200: #e5e7eb;
+	--clr-neutral-300: #d1d5db;
+	--clr-neutral-400: #9ca3af;
+	--clr-neutral-500: #6b7280;
+	--clr-neutral-900: #18171c;
+
+	--clr-slate-700: #374151;
+	--clr-slate-800: #1f2937;
+
+	--clr-dark-900: #23222b;
+	--clr-dark-800: #383647;
+	--clr-dark-700: #4a4859;
+	--clr-dark-600: #5c5a6b;
+	--clr-dark-500: #6e6c7d;
+	--clr-dark-400: #8a889a;
+	--clr-dark-300: #a6a4b3;
+	--clr-dark-200: #c2c1cc;
+	--clr-dark-100: #dedde5;
+
+	--clr-danger-700: #e11d48;
+	--clr-danger-800: #be123c;
+
+	--color-white: #ffffff;
+	--color-black: #0b1120;
+
+	/* Градиенты и вспомогательные переменные (используются в ряде компонентов) */
+	--bg-grad-1: rgba(158, 26, 176, 0.25);
+	--bg-grad-2: rgba(14, 116, 144, 0.22);
+	--bg-grad-3: rgba(125, 34, 206, 0.18);
+	--bg-grad-4: rgba(29, 78, 216, 0.16);
+
+	--radius: 10px;
+}
+
+:root,
+:root[data-theme="light"] {
+	color-scheme: light;
+	--primary-color: #9e1ab0;
+	--primary-light-color: #d9c5dc;
+	--primary-light: #b91c8c;
+	--primary-gradient-end: #bd19d2;
+	--primary-muted: color-mix(in srgb, var(--primary-color) 55%, transparent);
+
+	--bg-color: var(--clr-neutral-50);
+	--hover-bg-color: var(--clr-neutral-100);
+	--text-color: #1f2937;
+	--text-color-soft: #4b5563;
+	--text-color-muted: #6b7280;
+	--text-color-secondary: var(--text-color-soft);
+	--text-on-accent: var(--color-white);
+
+	--nav-bg-color: var(--color-white);
+	--card-bg: var(--color-white);
+	--card-bg-muted: #f8fafc;
+	--input-bg-color: var(--color-white);
+	--input-border-color: rgba(148, 163, 184, 0.35);
+	--border-muted: rgba(148, 163, 184, 0.25);
+	--border-strong: rgba(148, 163, 184, 0.45);
+	--border: rgba(148, 163, 184, 0.8);
+
+	--surface-muted: #f8f9fb;
+	--surface-card: var(--color-white);
+	--surface-elevated: #f3f4f6;
+	--surface-hover: #f1f5f9;
+	--surface-contrast: color-mix(
+		in srgb,
+		var(--primary-color) 12%,
+		var(--color-white)
+	);
+	--surface-hover-subtle: rgba(15, 23, 42, 0.04);
+
+	--text-primary: #1f2937;
+	--text-secondary: #4b5563;
+	--text-tertiary: #6b7280;
+	--border-subtle: rgba(148, 163, 184, 0.25);
+	--border-muted: rgba(148, 163, 184, 0.25);
+	--border-strong: rgba(148, 163, 184, 0.45);
+	--border: rgba(148, 163, 184, 0.8);
+	--danger-shadow: rgba(220, 38, 38, 0.25);
+	--accent-disabled: color-mix(
+		in srgb,
+		var(--primary-color) 30%,
+		transparent
+	);
+	--decor-orb-strong: color-mix(
+		in srgb,
+		var(--primary-color) 78%,
+		transparent
+	);
+	--decor-orb-soft: color-mix(
+		in srgb,
+		var(--primary-gradient-end) 70%,
+		var(--surface-elevated)
+	);
+	--decor-orb-highlight: color-mix(
+		in srgb,
+		var(--primary-color) 50%,
+		var(--surface-muted)
+	);
+	--decor-orb-contrast: color-mix(
+		in srgb,
+		var(--primary-color) 45%,
+		var(--nav-bg-color)
+	);
+	--success-soft-shadow: 0 8px 24px rgba(21, 128, 61, 0.14);
+
+	--glass-bg: rgba(255, 255, 255, 0.72);
+	--glass-border: rgba(148, 163, 184, 0.28);
+	--glass-shadow: 0 20px 45px rgba(15, 23, 42, 0.16);
+	--glass-blur: 20px;
+
+	--danger-color: #dc2626;
+	--danger-hover: #b91c1c;
+	--error-color: #dc2626;
+	--error-hover: #b91c1c;
+	--danger-soft-bg: rgba(220, 38, 38, 0.12);
+	--danger-soft-border: rgba(220, 38, 38, 0.22);
+	--danger-soft-shadow: 0 8px 24px rgba(220, 38, 38, 0.12);
+
+	--success-color: #15803d;
+	--success-soft-bg: rgba(21, 128, 61, 0.12);
+	--success-soft-border: rgba(21, 128, 61, 0.22);
+
+	--warning-color: var(--clr-amber-600);
+	--warning-soft-bg: rgba(217, 119, 6, 0.12);
+	--warning-soft-border: rgba(217, 119, 6, 0.2);
+
+	--info-color: #0ea5e9;
+	--info-soft-bg: rgba(14, 165, 233, 0.12);
+	--info-soft-border: rgba(14, 165, 233, 0.2);
+
+	--badge-info-bg: var(--info-soft-bg);
+	--badge-info-text: var(--info-color);
+	--badge-neutral-bg: rgba(148, 163, 184, 0.15);
+	--badge-neutral-text: #475569;
+
+	--neutral-soft-bg: rgba(148, 163, 184, 0.12);
+	--neutral-soft-border: rgba(148, 163, 184, 0.2);
+
+	--status-info-bg: var(--info-soft-bg);
+	--status-info-text: var(--info-color);
+	--status-info-border: var(--info-soft-border);
+
+	--status-todo-bg: rgba(148, 163, 184, 0.12);
+	--status-todo-text: #475569;
+	--status-todo-border: rgba(148, 163, 184, 0.2);
+
+	--status-progress-bg: rgba(124, 58, 237, 0.12);
+	--status-progress-text: var(--primary-color);
+	--status-progress-border: rgba(124, 58, 237, 0.22);
+
+	--status-done-bg: rgba(16, 185, 129, 0.12);
+	--status-done-text: #047857;
+	--status-done-border: rgba(16, 185, 129, 0.22);
+
+	--priority-low-bg: rgba(59, 130, 246, 0.12);
+	--priority-low-text: var(--clr-blue-700);
+	--priority-low-border: rgba(59, 130, 246, 0.2);
+
+	--priority-medium-bg: rgba(124, 58, 237, 0.12);
+	--priority-medium-text: var(--primary-color);
+	--priority-medium-border: rgba(124, 58, 237, 0.22);
+
+	--priority-high-bg: rgba(220, 38, 38, 0.12);
+	--priority-high-text: var(--danger-color);
+	--priority-high-border: var(--danger-soft-border);
+
+	--author-badge-bg: rgba(79, 70, 229, 0.14);
+	--author-badge-text: var(--primary-color);
+	--author-badge-border: rgba(79, 70, 229, 0.25);
+
+	--due-badge-bg: rgba(234, 179, 8, 0.2);
+	--due-badge-text: var(--clr-amber-800);
+	--due-badge-border: rgba(234, 179, 8, 0.32);
+
+	--toast-bg: var(--card-bg);
+	--toast-border: var(--border-muted);
+	--toast-shadow: 0 24px 40px rgba(15, 23, 42, 0.18);
+
+	--slider-bg: color-mix(in srgb, var(--text-color) 35%, var(--color-white));
+	--switch-active-bg: var(--color-white);
+	--switch-active-border: color-mix(
+		in srgb,
+		var(--primary-color) 45%,
+		transparent
+	);
+	--switch-thumb-active: var(--brand-gradient);
+
+	/* Единый градиент для primary-кнопок (светлая тема использует тот же, что и тёмная) */
+	--btn-primary-start: var(--clr-pink-900);
+	--btn-primary-end: #b91c8c;
+	--brand-gradient: linear-gradient(
+		135deg,
+		var(--btn-primary-start) 0%,
+		var(--btn-primary-end) 100%
+	);
+
+	--scrollbar-primary: color-mix(
+		in srgb,
+		var(--primary-color) 65%,
+		var(--color-white)
+	);
+	--scrollbar-primary-hover: color-mix(
+		in srgb,
+		var(--primary-color) 75%,
+		var(--color-white)
+	);
+	--scrollbar-gray: var(--clr-dark-300);
+	--scrollbar-gray-hover: var(--clr-dark-400);
+}
+
+:root[data-theme="dark"] {
+	color-scheme: dark;
+
+	--primary-color: #9e1ab0;
+	--primary-light-color: #d2a7d8;
+	--primary-gradient-end: #bd19d2;
+	--bg-color: var(--clr-neutral-900);
+	--hover-bg-color: var(--clr-neutral-800);
+	--text-color: var(--clr-neutral-100);
+	--text-color-soft: var(--clr-gray-400);
+	--text-color-muted: #a0a0a0;
+	--text-color-secondary: var(--text-color-soft);
+	--text-on-accent: var(--color-white);
+
+	--nav-bg-color: rgba(24, 23, 28, 0.94);
+	--card-bg: var(--clr-dark-900);
+	--card-bg-muted: rgba(56, 54, 71, 0.9);
+	--input-bg-color: var(--clr-dark-900);
+	--input-border-color: var(--clr-dark-800);
+	--border-muted: rgba(255, 255, 255, 0.08);
+	--border-strong: rgba(255, 255, 255, 0.16);
+	--border: rgba(255, 255, 255, 0.16);
+
+	--surface-muted: rgba(255, 255, 255, 0.04);
+	--surface-card: var(--clr-dark-900);
+	--surface-elevated: rgba(255, 255, 255, 0.06);
+	--surface-hover: rgba(255, 255, 255, 0.08);
+	--surface-contrast: rgba(158, 26, 176, 0.18);
+	--surface-hover-subtle: rgba(255, 255, 255, 0.06);
+
+	--text-primary: var(--clr-neutral-100);
+	--text-secondary: var(--clr-neutral-400);
+	--text-tertiary: var(--clr-neutral-500);
+	--border-subtle: rgba(255, 255, 255, 0.08);
+	--border-muted: rgba(255, 255, 255, 0.08);
+	--border-strong: rgba(255, 255, 255, 0.16);
+	--border: rgba(255, 255, 255, 0.16);
+
+	--primary-color: var(--clr-pink-900);
+	--primary-hover: var(--clr-pink-800);
+	--primary-light: #b91c8c;
+	--accent-rgb: 158, 26, 176;
+	--primary-color: var(--clr-pink-900);
+	--primary-color-hover: var(--clr-pink-800);
+	--secondary-color: var(--clr-pink-950);
+
+	--hover-bg-color: rgba(255, 255, 255, 0.08);
+	--shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.22);
+	--shadow: 0 4px 28px rgba(0, 0, 0, 0.35);
+	--shadow-color: rgba(0, 0, 0, 0.4);
+	--accent-shadow: rgba(158, 26, 176, 0.32);
+	--danger-shadow: rgba(190, 18, 60, 0.36);
+	--primary-muted: color-mix(in srgb, var(--primary-color) 65%, transparent);
+	--accent-disabled: color-mix(
+		in srgb,
+		var(--primary-color) 35%,
+		transparent
+	);
+	--success-soft-shadow: 0 8px 24px rgba(34, 197, 94, 0.32);
+
+	--glass-bg: rgba(33, 32, 37, 0.35);
+	--glass-border: rgba(255, 255, 255, 0.08);
+	--glass-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+	--glass-blur: 16px;
+
+	--danger-color: var(--clr-danger-700);
+	--danger-hover: var(--clr-danger-800);
+	--error-color: var(--clr-danger-700);
+	--error-hover: var(--clr-danger-800);
+	--danger-soft-bg: rgba(190, 18, 60, 0.16);
+	--danger-soft-border: rgba(190, 18, 60, 0.32);
+	--danger-soft-shadow: 0 8px 28px rgba(190, 18, 60, 0.28);
+
+	--success-color: #4ade80;
+	--success-soft-bg: rgba(34, 197, 94, 0.18);
+	--success-soft-border: rgba(34, 197, 94, 0.32);
+
+	--warning-color: var(--clr-amber-400);
+	--warning-soft-bg: rgba(251, 191, 36, 0.18);
+	--warning-soft-border: rgba(251, 191, 36, 0.32);
+
+	--info-color: #38bdf8;
+	--info-soft-bg: rgba(56, 189, 248, 0.18);
+	--info-soft-border: rgba(56, 189, 248, 0.32);
+
+	--badge-info-bg: rgba(56, 189, 248, 0.2);
+	--badge-info-text: var(--info-color);
+	--badge-neutral-bg: rgba(148, 163, 184, 0.2);
+	--badge-neutral-text: var(--clr-neutral-100);
+
+	--neutral-soft-bg: rgba(148, 163, 184, 0.14);
+	--neutral-soft-border: rgba(148, 163, 184, 0.26);
+
+	--status-info-bg: rgba(56, 189, 248, 0.18);
+	--status-info-text: var(--info-color);
+	--status-info-border: rgba(56, 189, 248, 0.28);
+
+	--status-todo-bg: rgba(255, 255, 255, 0.04);
+	--status-todo-text: var(--text-color);
+	--status-todo-border: rgba(255, 255, 255, 0.08);
+
+	--status-progress-bg: rgba(158, 26, 176, 0.14);
+	--status-progress-text: var(--primary-color);
+	--status-progress-border: rgba(158, 26, 176, 0.24);
+
+	--status-done-bg: rgba(34, 197, 94, 0.18);
+	--status-done-text: var(--success-color);
+	--status-done-border: rgba(34, 197, 94, 0.28);
+
+	--priority-low-bg: rgba(59, 130, 246, 0.18);
+	--priority-low-text: #93c5fd;
+	--priority-low-border: rgba(59, 130, 246, 0.3);
+
+	--priority-medium-bg: rgba(168, 85, 247, 0.2);
+	--priority-medium-text: #e9d5ff;
+	--priority-medium-border: rgba(168, 85, 247, 0.32);
+
+	--priority-high-bg: rgba(244, 63, 94, 0.2);
+	--priority-high-text: var(--danger-color);
+	--priority-high-border: rgba(244, 63, 94, 0.34);
+
+	--author-badge-bg: var(--clr-slate-800);
+	--author-badge-text: var(--text-color);
+	--author-badge-border: var(--clr-slate-700);
+
+	--due-badge-bg: var(--clr-amber-300);
+	--due-badge-text: var(--clr-amber-800);
+	--due-badge-border: var(--clr-amber-400);
+
+	--toast-bg: var(--card-bg);
+	--toast-border: var(--border-muted);
+	--toast-shadow: 0 24px 50px rgba(0, 0, 0, 0.4);
+
+	--slider-bg: var(--color-white);
+	--switch-active-bg: var(--brand-gradient);
+	--switch-active-border: color-mix(
+		in srgb,
+		var(--primary-color) 50%,
+		transparent
+	);
+	--switch-thumb-active: var(--color-white);
+
+	/* Единый градиент для primary-кнопок (совпадает со светлой темой) */
+	--btn-primary-start: var(--clr-pink-900);
+	--btn-primary-end: #b91c8c;
+	--brand-gradient: linear-gradient(
+		135deg,
+		var(--btn-primary-start) 0%,
+		var(--btn-primary-end) 100%
+	);
+
+	--scrollbar-primary: color-mix(in srgb, var(--primary-color) 55%, black);
+	--scrollbar-primary-hover: color-mix(
+		in srgb,
+		var(--primary-color) 65%,
+		black
+	);
+	--scrollbar-gray: var(--clr-dark-300);
+	--scrollbar-gray-hover: var(--clr-dark-400);
+}

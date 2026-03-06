@@ -1,0 +1,44 @@
+{
+	"compilerOptions": {
+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+		"target": "ES2022",
+		"useDefineForClassFields": true,
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"skipLibCheck": true,
+
+		/* Bundler mode */
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": false,
+		"moduleDetection": "force",
+		"noEmit": true,
+		"jsx": "react-jsx",
+
+		/* Linting */
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"erasableSyntaxOnly": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedSideEffectImports": true,
+
+		/* Путь для абсолютных импортов */
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"],
+			"@app/*": ["src/app/*"],
+			"@shared/*": ["src/shared/*"],
+			"@entities/*": ["src/entities/*"],
+			"@features/*": ["src/features/*"],
+			"@widgets/*": ["src/widgets/*"],
+			"@pages/*": ["src/pages/*"],
+			"@assets/*": ["src/shared/assets/*"],
+			"@api/*": ["src/shared/api/*"],
+			"@config/*": ["src/shared/config/*"],
+			"@types/*": ["src/shared/types/*"],
+			"@styles/*": ["src/shared/styles/*"]
+		}
+	},
+	"include": ["src"]
+}

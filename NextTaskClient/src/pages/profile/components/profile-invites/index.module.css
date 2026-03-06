@@ -1,0 +1,98 @@
+/* Стили для списка входящих приглашений в профиле */
+.container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px 0;
+}
+
+.list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 12px 14px;
+	border: 1px solid var(--input-border-color);
+	border-radius: var(--radius);
+	background: var(--card-bg);
+}
+
+.main {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.wsName {
+	font-weight: 600;
+	color: var(--text-color);
+}
+
+.meta {
+	color: var(--text-color-soft);
+	font-size: 0.92rem;
+}
+
+.actions {
+	display: flex;
+	gap: 8px;
+}
+
+.acceptBtn {
+	background: var(--primary-color) !important;
+	color: #fff !important;
+	border: 1px solid var(--primary-color) !important;
+}
+
+.acceptBtn:hover:not(:disabled) {
+	background: var(--primary-hover) !important;
+	border-color: var(--primary-hover) !important;
+}
+
+.declineBtn {
+	background: var(--danger-color) !important;
+	color: #fff !important;
+	border: 1px solid var(--danger-color) !important;
+}
+
+.declineBtn:hover:not(:disabled) {
+	background: var(--danger-hover) !important;
+	border-color: var(--danger-hover) !important;
+}
+
+.empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 24px;
+	border: 1px dashed var(--input-border-color);
+	border-radius: var(--radius);
+	color: var(--text-color-soft);
+}
+
+.emptyIcon {
+	font-size: 24px;
+}
+.emptyTitle {
+	font-weight: 600;
+	color: var(--text-color);
+}
+.emptyText {
+	font-size: 0.95rem;
+}

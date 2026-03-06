@@ -1,0 +1,112 @@
+/* Основные стили для WorkspaceSettings */
+.header {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin-bottom: 32px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid var(--input-border-color);
+	border-radius: 16px 16px 0 0;
+}
+
+.backBtn {
+	background: none;
+	border: none;
+	color: var(--text-color-soft);
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 6px;
+	transition: all 0.2s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.backBtn:hover {
+	background: var(--hover-bg-color);
+	color: var(--text-color);
+}
+
+.titleSection {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.title {
+	font-size: 1.75rem;
+	font-weight: 600;
+	color: var(--text-color);
+	margin: 0;
+}
+
+/* Стили табов перенесены в компонент TabNavigation */
+
+.section {
+	background: linear-gradient(
+		135deg,
+		var(--card-bg) 0%,
+		rgba(255, 255, 255, 0.02) 100%
+	);
+	border-radius: 16px;
+	border: 1px solid var(--input-border-color);
+	position: relative;
+}
+
+.section::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--primary-color) 50%,
+		transparent 100%
+	);
+	opacity: 0.6;
+}
+
+/* Остальные стили перенесены в отдельные модули компонентов */
+
+/* Responsive стили для основного компонента */
+@media (max-width: 768px) {
+	.header {
+		margin-bottom: 24px;
+		gap: 12px;
+	}
+
+	.titleSection {
+		width: 100%;
+	}
+
+	.title {
+		font-size: 1.5rem;
+	}
+
+	.content {
+		border-radius: 12px;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+	}
+}
+
+@media (max-width: 480px) {
+	.header {
+		margin-bottom: 20px;
+		gap: 10px;
+	}
+
+	.titleSection svg {
+		display: none;
+	}
+
+	.title {
+		font-size: 1.3rem;
+	}
+
+	.content {
+		border-radius: 8px;
+	}
+}

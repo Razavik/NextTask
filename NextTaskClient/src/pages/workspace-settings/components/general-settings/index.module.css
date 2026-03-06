@@ -1,0 +1,221 @@
+/* Стили для компонента GeneralSettings */
+.generalSection {
+	padding: 16px;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.label {
+	font-weight: 500;
+	color: var(--text-color);
+	font-size: 0.9rem;
+}
+
+.textarea {
+	width: 100%;
+	min-height: 80px;
+	padding: 12px 16px;
+	border: 1px solid var(--input-border-color);
+	border-radius: var(--radius);
+	background: var(--input-bg-color);
+	color: var(--text-color);
+	font-family: inherit;
+	font-size: 1rem;
+	resize: vertical;
+	transition:
+		border-color 0.2s,
+		box-shadow 0.2s;
+	outline: none;
+}
+
+.textarea:focus {
+	border-color: var(--primary-color);
+	box-shadow: 0 0 0 2px var(--primary-color-fade, rgba(158, 26, 176, 0.12));
+}
+
+.textarea::placeholder {
+	color: var(--text-color-soft);
+}
+
+.actions {
+	display: flex;
+	justify-content: flex-start;
+}
+
+.saveBtn {
+	font-weight: 500;
+}
+
+.saveBtn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+	transform: none !important;
+	box-shadow: none !important;
+}
+
+.dangerZone {
+	border-top: none;
+	padding: 16px;
+	margin-top: 24px;
+	background: linear-gradient(
+		180deg,
+		color-mix(in oklab, var(--danger-color, #f44336) 6%, transparent) 0%,
+		transparent 100%
+	);
+	border: 1px solid
+		color-mix(in oklab, var(--danger-color, #f44336) 22%, transparent);
+	border-radius: var(--radius);
+}
+
+.dangerHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--danger-color, #f44336);
+	font-weight: 700;
+	margin-bottom: 6px;
+	line-height: 1.2;
+	text-transform: none;
+}
+.dangerHeader :where(svg) {
+	color: var(--danger-color, #f44336);
+}
+
+.dangerText {
+	color: var(--text-color-soft);
+	margin: 0 0 16px 0;
+}
+
+.warningIcon {
+	display: block;
+	color: var(--danger-color, #f44336);
+	line-height: 1;
+}
+
+.deleteBtn {
+	background: var(--danger-color, #f44336) !important;
+	color: white !important;
+	font-weight: 500;
+	font-size: 14px !important;
+	padding: 8px 12px !important;
+	transition:
+		background 0.2s,
+		transform 0.2s,
+		box-shadow 0.2s;
+}
+
+.deleteBtn:hover:not(:disabled) {
+	background: var(--danger-hover, #d32f2f) !important;
+}
+
+.deleteBtn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+	transform: none !important;
+	box-shadow: none !important;
+}
+
+.success {
+	background: var(--success-bg, rgba(76, 175, 80, 0.1));
+	color: var(--success-color, #4caf50);
+	padding: 12px 16px;
+	border-radius: var(--radius);
+	border: 1px solid var(--success-color, #4caf50);
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+.error {
+	background: var(--danger-bg, rgba(244, 67, 54, 0.1));
+	color: var(--danger-color, #f44336);
+	padding: 12px 16px;
+	border-radius: var(--radius);
+	border: 1px solid var(--danger-color, #f44336);
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+.leaveSection {
+	border-top: 1px solid var(--input-border-color);
+	padding-top: 24px;
+	margin-top: 24px;
+}
+
+.leaveHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text-color);
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+
+.leaveText {
+	color: var(--text-color-soft);
+	margin: 0 0 12px 0;
+}
+
+.leaveBtn {
+	background: var(--danger-color, #f44336);
+	color: var(--text-on-accent);
+	border: 1px solid
+		color-mix(in srgb, var(--danger-color, #f44336) 30%, transparent);
+	font-weight: 500;
+	transition:
+		background 0.2s,
+		transform 0.2s,
+		box-shadow 0.2s;
+	padding-inline: 16px;
+	box-shadow: none;
+}
+
+.leaveBtn:hover:not(:disabled) {
+	background: var(--danger-hover, #d32f2f);
+	transform: translateY(-1px);
+	box-shadow: none;
+}
+
+.leaveBtn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+	transform: none !important;
+	box-shadow: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.section {
+		padding: 20px;
+	}
+
+	.form {
+		gap: 20px;
+	}
+}
+
+@media (max-width: 600px) {
+	.section {
+		padding: 16px;
+	}
+
+	.dangerZone {
+		padding-top: 20px;
+		margin-top: 20px;
+	}
+
+	.leaveSection {
+		padding-top: 20px;
+		margin-top: 20px;
+	}
+}

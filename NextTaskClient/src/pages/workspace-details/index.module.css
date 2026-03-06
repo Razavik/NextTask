@@ -1,0 +1,582 @@
+.workspaceHeader {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	margin-bottom: 28px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid var(--input-border-color);
+}
+
+.workspaceTitleBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.workspaceBreadcrumb {
+	font-size: 0.78rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: color-mix(
+		in srgb,
+		var(--text-color-soft) 85%,
+		var(--text-color) 15%
+	);
+}
+
+.workspaceTitleRow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.backButton {
+	background: none;
+	border: none;
+	color: var(--text-color-soft);
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+
+.backButton:hover,
+.backButton:focus-visible {
+	background: var(--hover-bg-color);
+	color: var(--text-color);
+}
+
+.workspaceHeader h1 {
+	margin: 0;
+	font-size: clamp(24px, 3vw, 30px);
+	color: var(--text-color);
+}
+
+.workspaceActions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.workspaceHeaderActionsRow {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.workspaceActions button {
+	padding: 9px 18px;
+	font-size: 0.95rem;
+}
+
+.workspaceMeta {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.metaBadge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: color-mix(
+		in srgb,
+		var(--text-color) 70%,
+		var(--text-color-soft) 30%
+	);
+	background: color-mix(
+		in srgb,
+		var(--surface-muted) 80%,
+		rgba(255, 255, 255, 0.08) 20%
+	);
+	border: 1px solid
+		color-mix(in srgb, var(--border-muted) 85%, var(--primary-muted) 15%);
+}
+
+.metaBadge svg {
+	width: 16px;
+	height: 16px;
+}
+
+/* оформление бейджа роли идентично другим мета-бейджам */
+.metaRole {
+	font-weight: 600;
+}
+
+.workspaceDescription {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 14px 16px;
+	border-radius: 16px;
+	background: color-mix(
+		in srgb,
+		var(--surface-muted) 82%,
+		rgba(255, 255, 255, 0.12) 18%
+	);
+	border: 1px solid var(--border-muted);
+}
+
+.descriptionIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	background: var(--primary-color);
+	color: var(--text-on-accent, #ffffff);
+}
+
+.descriptionBody {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.descriptionLabel {
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	font-weight: 600;
+	color: color-mix(
+		in srgb,
+		var(--text-color-soft) 75%,
+		var(--text-color) 25%
+	);
+}
+
+.descriptionText {
+	margin: 0;
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: color-mix(
+		in srgb,
+		var(--text-color) 82%,
+		var(--text-color-soft) 18%
+	);
+}
+
+.profileLink {
+	color: var(--primary-color);
+	text-decoration: none;
+}
+
+.workspaceActions .addTaskToggleBtn {
+	background-color: var(--primary-color);
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: 500;
+	transition: background-color 0.2s;
+}
+
+.addTaskToggleBtn:hover {
+	background-color: var(--primary-color-dark);
+}
+
+.statsContainer {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+	gap: 16px;
+	margin: 16px 0;
+}
+
+.taskFormVertical button:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	background-color: var(--primary-color-hover);
+}
+
+.taskFormVertical button:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.formRow {
+	display: flex;
+	gap: 16px;
+}
+
+.formCol {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.tasksList {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(378px, 1fr));
+	gap: 16px;
+}
+
+.tasksList li {
+	border: 1px solid var(--border-muted);
+	border-radius: var(--border-radius);
+	transition:
+		background-color 0.2s,
+		border-color 0.2s;
+}
+
+.tasksList li:hover {
+	background-color: var(--bg-color-hover);
+	border-color: var(--border-color-strong);
+}
+
+.taskHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.taskTitle {
+	font-weight: 600;
+}
+
+.taskActions {
+	display: flex;
+	gap: 8px;
+}
+
+.taskActionBtn {
+	color: var(--text-color-soft);
+	background: none;
+	border: none;
+	padding: 4px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	border-radius: var(--border-radius);
+	transition:
+		color 0.2s,
+		background-color 0.2s,
+		transform 0.2s;
+}
+
+.taskActionBtn:hover {
+	color: var(--text-color);
+	background-color: var(--bg-color-hover);
+	transform: scale(1.1);
+}
+
+.taskDescription {
+	font-size: 0.9rem;
+	color: var(--text-color-soft);
+	margin-bottom: 16px;
+}
+
+.taskMeta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+	font-size: 0.8rem;
+	color: var(--text-color-soft);
+}
+
+.taskChip {
+	padding: 4px 10px;
+	border-radius: 999px;
+	font-weight: 500;
+	text-transform: capitalize;
+}
+
+.taskChipStatus {
+	background-color: var(--status-info-bg);
+	color: var(--status-info-text);
+}
+
+.taskChipPriority {
+	border: 1px solid;
+}
+
+.taskPriority-low {
+	border-color: var(--priority-low-border);
+	color: var(--priority-low-text);
+	background-color: var(--priority-low-bg);
+}
+
+.taskPriority-medium {
+	border-color: var(--priority-medium-border);
+	color: var(--priority-medium-text);
+	background-color: var(--priority-medium-bg);
+}
+
+.taskPriority-high {
+	border-color: var(--priority-high-border);
+	color: var(--priority-high-text);
+	background-color: var(--priority-high-bg);
+}
+
+.emptyTasks {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 16px;
+	padding: 48px;
+	color: var(--text-color-soft);
+	border: 2px dashed var(--border-muted);
+	border-radius: var(--border-radius);
+	min-height: 250px;
+	margin-top: 32px;
+}
+
+.emptyTasks p {
+	margin: 0;
+	font-size: 1.1rem;
+}
+
+.addTaskBtnEmpty {
+	margin-top: 8px;
+	padding: 12px 24px;
+	background-color: var(--primary-color);
+	color: #fff;
+	border: none;
+	border-radius: var(--border-radius);
+	cursor: pointer;
+	font-weight: 500;
+	transition:
+		transform 0.2s,
+		box-shadow 0.2s,
+		background-color 0.2s;
+}
+
+.addTaskBtnEmpty:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	background-color: var(--primary-color-hover);
+}
+
+.addTaskBtnEmpty:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.error {
+	background-color: #fee2e2;
+	color: #b91c1c;
+	padding: 16px;
+	border-radius: var(--border-radius);
+	margin-bottom: 24px;
+}
+
+/* Кастомный дропдаун для смены статуса */
+.taskDropdown {
+	position: relative;
+}
+
+.taskDropdown summary {
+	list-style: none;
+	cursor: pointer;
+}
+
+.taskDropdown summary::-webkit-details-marker {
+	display: none;
+}
+
+.taskDropdownMenu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	background: var(--card-bg);
+	border-radius: 8px;
+	box-shadow: var(--shadow);
+	margin-top: 4px;
+	padding: 4px 0;
+	min-width: 120px;
+	z-index: 10;
+}
+
+.metaItem {
+	display: flex;
+	align-items: center;
+}
+
+.priority {
+	display: inline-block;
+	padding: 3px 6px;
+	border-radius: 3px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.priorityHigh {
+	background-color: rgba(220, 53, 69, 0.1);
+	color: #dc3545;
+}
+
+.priorityMedium {
+	background-color: rgba(255, 193, 7, 0.1);
+	color: #e6a100;
+}
+
+.priorityLow {
+	background-color: rgba(40, 167, 69, 0.1);
+	color: #28a745;
+}
+
+.form {
+	background-color: #f8f9fa;
+	padding: 20px;
+	border-radius: 8px;
+	margin-top: 24px;
+	margin-bottom: 16px;
+}
+
+.formTitle {
+	margin-top: 0;
+	margin-bottom: 16px;
+	font-size: 1.2rem;
+	color: var(--text-color);
+}
+
+.formGrid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 16px;
+}
+
+@media (min-width: 768px) {
+	.formGrid {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.formGroup {
+	margin-bottom: 16px;
+}
+
+.formLabel {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+}
+
+.formInput,
+.formTextarea,
+.formSelect {
+	width: 100%;
+	padding: 8px;
+	border: 1px solid #ced4da;
+	border-radius: 4px;
+	font-size: 1rem;
+}
+
+.formTextarea {
+	min-height: 100px;
+	resize: vertical;
+}
+
+.formActions {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 16px;
+}
+
+.submitButton {
+	background-color: var(--primary-color);
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 8px 16px;
+	cursor: pointer;
+	font-size: 1rem;
+	transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+	background-color: #2980b9;
+}
+
+.error {
+	color: #dc3545;
+	margin-bottom: 16px;
+	padding: 12px;
+	border-radius: 4px;
+	background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Стили для кнопки добавления задачи */
+.addTaskBtn {
+	background: var(--primary-color);
+	color: #fff;
+	border: none;
+	padding: 10px 20px;
+	border-radius: var(--radius);
+	cursor: pointer;
+	font-size: 16px;
+	font-weight: 600;
+	box-shadow: 0 2px 8px 0 rgba(158, 26, 176, 0.1);
+	transition:
+		background 0.2s,
+		transform 0.13s,
+		box-shadow 0.2s;
+}
+
+.addTaskBtn:hover {
+	background: var(--primary-hover);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px 0 rgba(158, 26, 176, 0.2);
+}
+
+@media (max-width: 768px) {
+	.tasksList {
+		grid-template-columns: 1fr;
+	}
+
+	.statsContainer {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 12px;
+		margin: 24px 0;
+	}
+
+	.workspaceHeaderActionsRow {
+		gap: 16px;
+	}
+
+	.workspaceActions {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.workspaceActions button {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.workspaceDescription {
+		padding: 12px;
+	}
+}
+
+@media (max-width: 480px) {
+	.tasksList {
+		grid-template-columns: 1fr;
+	}
+
+	.statsContainer {
+		grid-template-columns: 1fr;
+	}
+}

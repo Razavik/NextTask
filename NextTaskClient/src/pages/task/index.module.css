@@ -1,0 +1,408 @@
+/* Modern Task Page Design - Linear/Notion inspired */
+
+/* ========== PAGE LAYOUT ========== */
+.pageContent {
+	display: flex;
+	gap: 32px;
+	margin: 0 auto;
+}
+
+.mainColumn {
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
+	flex-grow: 1;
+	min-width: 0;
+}
+
+.sidebarColumn {
+	width: 320px;
+	flex-shrink: 0;
+	position: sticky;
+	top: 24px;
+	height: fit-content;
+	display: block;
+}
+
+/* Сайдбар всегда виден на десктопе */
+@media (min-width: 1025px) {
+	.sidebarColumn.mobilePanel {
+		display: block;
+	}
+}
+
+/* ========== TASK HEADER BADGES ========== */
+.metaList {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.metaItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	background: var(--surface-elevated);
+	border-radius: 8px;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--text-secondary);
+	transition: all 0.2s ease;
+}
+
+.metaItem:hover {
+	background: var(--surface-hover);
+	transform: translateY(-1px);
+}
+
+.dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+}
+
+.status_todo {
+	background: #6b7280;
+}
+.status_progress {
+	background: #3b82f6;
+}
+.status_done {
+	background: #10b981;
+}
+
+.priority_low {
+	background: #6b7280;
+}
+.priority_medium {
+	background: #f59e0b;
+}
+.priority_high {
+	background: #ef4444;
+}
+
+/* Status badges with modern styling */
+.taskStatus,
+.taskPriority {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+}
+
+.taskStatus.todo {
+	background: rgba(107, 114, 128, 0.12);
+	color: #6b7280;
+}
+
+.taskStatus.progress {
+	background: rgba(59, 130, 246, 0.12);
+	color: #3b82f6;
+}
+
+.taskStatus.done {
+	background: rgba(16, 185, 129, 0.12);
+	color: #10b981;
+}
+
+.taskPriority.high {
+	background: rgba(239, 68, 68, 0.12);
+	color: #ef4444;
+}
+
+.taskPriority.medium {
+	background: rgba(245, 158, 11, 0.12);
+	color: #f59e0b;
+}
+
+.taskPriority.low {
+	background: rgba(107, 114, 128, 0.12);
+	color: #6b7280;
+}
+
+/* ========== CONTENT EDITOR ========== */
+.contentEditor {
+	background: var(--surface-card);
+	border-radius: 16px;
+	padding: 24px;
+	box-shadow:
+		0 1px 3px rgba(0, 0, 0, 0.05),
+		0 1px 2px rgba(0, 0, 0, 0.03);
+	border: 1px solid var(--border-subtle);
+	transition: box-shadow 0.3s ease;
+}
+
+.contentEditor:hover {
+	box-shadow:
+		0 4px 12px rgba(0, 0, 0, 0.08),
+		0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.contentHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid var(--border-subtle);
+}
+
+.contentHeader h3 {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--text-secondary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.contentInput {
+	width: 100%;
+	min-height: 180px;
+	resize: vertical;
+	background: transparent;
+	border: 2px solid transparent;
+	border-radius: 12px;
+	padding: 16px;
+	font-size: 15px;
+	color: var(--text-primary);
+	transition: all 0.2s ease;
+}
+
+.contentInput:hover {
+	background: var(--surface-hover);
+}
+
+.contentInput:focus {
+	background: var(--surface-elevated);
+	border-color: var(--primary-color);
+	outline: none;
+}
+
+.contentActions {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid var(--border-subtle);
+}
+
+/* ========== TABS NAVIGATION ========== */
+.tabsContainer {
+	display: flex;
+	gap: 4px;
+	padding: 4px;
+	background: var(--surface-elevated);
+	border-radius: 12px;
+	border: 1px solid var(--border-subtle);
+	margin-bottom: 24px;
+}
+
+.tabBtn {
+	padding: 10px 20px;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--text-secondary);
+	background: transparent;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	position: relative;
+}
+
+.tabBtn:hover {
+	color: var(--text-primary);
+	background: var(--surface-hover);
+}
+
+.tabBtnActive {
+	color: var(--text-primary);
+	background: var(--surface-card);
+	box-shadow:
+		0 1px 3px rgba(0, 0, 0, 0.08),
+		0 1px 2px rgba(0, 0, 0, 0.04);
+	font-weight: 600;
+}
+
+/* Desktop/Mobile tab variants */
+.desktopTabs {
+	display: flex;
+	gap: 4px;
+	padding: 4px;
+	background: var(--surface-elevated);
+	border-radius: 12px;
+	border: 1px solid var(--border-subtle);
+	width: fit-content;
+}
+
+.mobileTabs {
+	display: none;
+	gap: 4px;
+	padding: 4px;
+	background: var(--surface-elevated);
+	border-radius: 12px;
+	border: 1px solid var(--border-subtle);
+	margin-bottom: 20px;
+}
+
+.mobileTabs * {
+	flex: 1;
+}
+
+.mobileTabBtn {
+	padding: 10px 16px;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--text-secondary);
+	background: transparent;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.mobileTabBtnActive {
+	color: var(--text-primary);
+	background: var(--surface-card);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	font-weight: 600;
+}
+
+/* ========== TAB PANELS ========== */
+.desktopPanel {
+	display: none;
+	animation: fadeIn 0.3s ease-out;
+}
+
+.desktopPanel.active {
+	display: block;
+}
+
+/* На десктопе показываем только активный mobilePanel внутри активного desktopPanel */
+.desktopPanel.active > .mobilePanel.active {
+	display: block;
+}
+
+.mobilePanel {
+	display: none;
+	animation: fadeIn 0.3s ease-out;
+}
+
+.mobilePanel.active {
+	display: block;
+}
+
+.commentsPanel,
+.trackerPanel {
+	margin-top: 0;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+	.pageContent {
+		flex-direction: column;
+		padding: 16px 20px;
+		gap: 24px;
+	}
+
+	.sidebarColumn {
+		width: 100%;
+		position: static;
+	}
+
+	.mainColumn {
+		gap: 24px;
+	}
+
+	/* Показываем мобильные вкладки на планшетах */
+	.desktopTabs {
+		display: none;
+	}
+
+	.mobileTabs {
+		display: flex;
+	}
+}
+
+@media (max-width: 768px) {
+	.pageContent {
+		padding: 12px 16px;
+	}
+
+	.contentEditor {
+		padding: 16px;
+		border-radius: 12px;
+	}
+
+	.desktopTabs {
+		display: none;
+	}
+
+	.mobileTabs {
+		display: flex;
+	}
+
+	.desktopPanel {
+		display: block;
+	}
+
+	.mobilePanel {
+		display: none;
+	}
+
+	.mobilePanel.active {
+		display: block;
+	}
+
+	.sidebarColumn.mobilePanel {
+		display: none;
+	}
+
+	.sidebarColumn.mobilePanel.active {
+		display: block;
+	}
+}
+
+/* ========== UTILITY CLASSES ========== */
+.sectionSpacing {
+	margin-top: 24px;
+}
+
+.headerRow {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.navRow {
+	display: flex;
+	gap: 8px;
+}
+
+.description {
+	color: var(--text-secondary);
+	font-size: 14px;
+	line-height: 1.6;
+}

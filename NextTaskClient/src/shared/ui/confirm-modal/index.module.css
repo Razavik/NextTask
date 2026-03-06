@@ -1,0 +1,70 @@
+.title {
+	margin: 0 0 8px 0;
+	font-size: 1.05rem;
+	color: var(--text-color);
+}
+
+.message {
+	margin: 0 0 16px 0;
+	color: var(--text-color-soft);
+	line-height: 1.5;
+}
+
+.matchBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-bottom: 16px;
+}
+.matchLabel {
+	font-size: 0.9rem;
+	color: var(--text-color);
+}
+.matchInput {
+	background: var(--input-bg, var(--card-bg));
+	border: 1px solid var(--input-border-color);
+	color: var(--text-color);
+	border-radius: 8px;
+	padding: 8px 10px;
+}
+
+.footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+}
+
+.cancelBtn {
+	background: transparent;
+	border: 1px solid var(--input-border-color);
+	color: var(--text-color);
+	border-radius: 8px;
+	padding: 8px 12px;
+	cursor: pointer;
+}
+
+.cancelBtn:hover {
+	background: var(--secondary-color);
+}
+
+.confirmBtn {
+	background: var(--primary-color);
+	border: none;
+	color: white;
+	border-radius: 8px;
+	padding: 8px 12px;
+	cursor: pointer;
+}
+
+.confirmBtn:hover {
+	filter: brightness(0.95);
+}
+
+.danger {
+	background: var(--danger-color);
+}
+
+.confirmBtn.danger:hover {
+	background: var(--danger-hover);
+	filter: none;
+}

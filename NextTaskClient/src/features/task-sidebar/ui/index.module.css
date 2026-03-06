@@ -1,0 +1,284 @@
+.sidebar {
+	width: 100%;
+	align-self: flex-start;
+}
+
+.section {
+	background: var(--card-bg);
+	border: 1px solid var(--input-border-color);
+	border-radius: var(--radius);
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+}
+
+.row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 0;
+	border-bottom: 1px solid var(--input-border-color);
+}
+
+.row:last-child {
+	border-bottom: none;
+	padding-bottom: 0;
+}
+
+.row:first-child {
+	padding-top: 0;
+}
+
+.label {
+	color: var(--text-color-soft);
+	font-size: 14px;
+}
+
+.value {
+	color: var(--text-color);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.badge {
+	padding: 4px 10px;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.status_todo {
+	background: var(--status-todo-bg);
+	color: var(--status-todo-text);
+	border: 1px solid var(--status-todo-border);
+}
+.status_progress {
+	background: var(--status-progress-bg);
+	color: var(--status-progress-text);
+	border: 1px solid var(--status-progress-border);
+}
+.status_done {
+	background: var(--status-done-bg);
+	color: var(--status-done-text);
+	border: 1px solid var(--status-done-border);
+}
+
+.priority_low {
+	background: var(--priority-low-bg);
+	color: var(--priority-low-text);
+	border: 1px solid var(--priority-low-border);
+}
+.priority_medium {
+	background: var(--priority-medium-bg);
+	color: var(--priority-medium-text);
+	border: 1px solid var(--priority-medium-border);
+}
+.priority_high {
+	background: var(--priority-high-bg);
+	color: var(--priority-high-text);
+	border: 1px solid var(--priority-high-border);
+}
+
+@media (max-width: 768px) {
+	.sidebar {
+		min-width: 0;
+		max-width: 100%;
+		width: 100%;
+		align-self: stretch;
+	}
+}
+
+/* Трекер времени */
+.timerBlock {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 4px;
+	padding: 12px;
+	background: var(--nav-bg-color);
+	border-radius: var(--radius);
+	border: 1px solid var(--input-border-color);
+}
+
+.timerDisplay {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--text-color);
+}
+
+.timerControls {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.timerBtn {
+	padding: 6px;
+}
+
+/* Блок людей: автор/исполнители */
+.peopleBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	margin-top: 16px;
+}
+
+.peopleSection {
+	background: var(--card-bg);
+	border: 1px solid var(--input-border-color);
+	border-radius: var(--radius);
+	padding: 12px;
+}
+
+.assigneeHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.assigneeHeader .blockTitle {
+	margin-bottom: 0;
+}
+
+.assigneeEditor {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.assigneeActions {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+.inlineBtn {
+	padding: 4px 10px;
+	font-size: 14px;
+}
+
+.inlineBtnPrimary {
+	background: var(--primary-color);
+	color: var(--text-on-accent);
+}
+
+.inlineBtnPrimary:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.inlineBtnSecondary {
+	background: transparent;
+	color: var(--text-color);
+	border-color: var(--input-border-color);
+}
+
+.inlineBtnSecondary:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.validationWarning {
+	margin-top: 4px;
+	color: var(--warning-text-color, #b45309);
+	background: var(--warning-bg-color, rgba(255, 193, 7, 0.1));
+	border: 1px solid var(--warning-border-color, rgba(255, 193, 7, 0.4));
+	border-radius: var(--radius);
+	padding: 6px 8px;
+	font-size: 0.8rem;
+}
+
+.blockTitle {
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--text-color);
+	margin-bottom: 12px;
+}
+
+.person {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 0;
+	border-top: 1px dashed var(--input-border-color);
+}
+
+.person:last-child {
+	padding-bottom: 0;
+}
+
+.personMain {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex: 1;
+}
+
+.peopleSection .person:first-of-type {
+	border-top: none;
+}
+
+.avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: var(--brand-gradient);
+	color: var(--text-on-accent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	overflow: hidden;
+}
+
+.avatarImage {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.personInfo {
+	display: flex;
+	flex-direction: column;
+}
+.personName {
+	color: var(--text-color);
+	font-weight: 600;
+}
+.personSub {
+	color: var(--text-color-soft);
+	font-size: 0.85rem;
+}
+
+.chatButton {
+	background: none;
+	border: none;
+	color: var(--text-color-soft);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 6px;
+	border-radius: var(--radius);
+	cursor: pointer;
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease;
+}
+
+.chatButton:hover {
+	background: var(--hover-bg-color);
+	color: var(--text-color);
+}
+
+.placeholder {
+	color: var(--text-color-soft);
+	font-style: italic;
+}

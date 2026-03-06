@@ -1,0 +1,204 @@
+.dockContainer {
+	position: fixed;
+	bottom: 24px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 1000;
+	display: flex;
+	justify-content: center;
+	pointer-events: none; /* чтобы клики сквозь контейнер проходили */
+}
+
+.dockContainer:hover,
+.dockContainer:has(.profileMenu) {
+	z-index: 10001;
+}
+
+.dock {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px;
+	border-radius: 24px;
+	border: 1px solid var(--glass-border);
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+	-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+	box-shadow: var(--glass-shadow);
+	pointer-events: auto; /* возвращаем клики для самой панели */
+}
+
+.dockItemWrapper {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.dockItem {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 16px;
+	border: none;
+	background: transparent;
+	color: var(--text-color-soft);
+	cursor: pointer;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	outline: none;
+}
+
+.dockItem:hover {
+	color: var(--text-color);
+	background: var(--hover-bg-color);
+	transform: translateY(-2px);
+}
+
+.dockItem.active {
+	color: var(--primary-color);
+	background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+}
+
+.dockItem.active:hover {
+	transform: none;
+}
+
+.activeDot {
+	position: absolute;
+	bottom: 4px;
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: var(--primary-color);
+}
+
+.avatarImg {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 1px solid var(--border-muted);
+}
+
+.badge {
+	position: absolute;
+	top: -6px;
+	right: -8px;
+	background: var(--danger-color);
+	color: var(--color-white);
+	border-radius: 10px;
+	padding: 2px 6px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1;
+	min-width: 18px;
+	text-align: center;
+	box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+/* Tooltip */
+.tooltip {
+	position: absolute;
+	top: -40px;
+	left: 50%;
+	transform: translateX(-50%) translateY(10px);
+	padding: 6px 12px;
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--glass-border);
+	border-radius: 8px;
+	color: var(--text-color);
+	font-size: 0.75rem;
+	font-weight: 500;
+	white-space: nowrap;
+	opacity: 0;
+	visibility: hidden;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: var(--shadow-sm);
+	pointer-events: none;
+}
+
+.dockItemWrapper:hover .tooltip {
+	opacity: 1;
+	visibility: visible;
+	transform: translateX(-50%) translateY(0);
+}
+
+.profileMenu {
+	position: absolute;
+	bottom: calc(100% + 16px);
+	right: 0; /* будет выровнено по правому краю контейнера */
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+	-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+	border: 1px solid var(--glass-border);
+	border-radius: 16px;
+	padding: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 160px;
+	box-shadow: var(--glass-shadow);
+	pointer-events: auto;
+	animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+	transform-origin: bottom right;
+}
+.profileMenuItem {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 14px;
+	width: 100%;
+	border: none;
+	background: transparent;
+	color: var(--text-color);
+	font-size: 0.9rem;
+	font-weight: 500;
+	border-radius: 10px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.profileMenuItem:hover {
+	background: var(--hover-bg-color);
+}
+
+.logoutItem {
+	color: var(--danger-color);
+}
+
+.logoutItem:hover {
+	background: color-mix(in srgb, var(--danger-color) 15%, transparent);
+}
+
+@keyframes slideUp {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+	.dockContainer {
+		bottom: 16px;
+	}
+
+	.dock {
+		padding: 6px;
+		gap: 4px;
+	}
+
+	.dockItem {
+		width: 44px;
+		height: 44px;
+	}
+}

@@ -1,0 +1,33 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.section {
+	background: var(--card-bg);
+	border: 1px solid var(--input-border-color);
+	border-radius: var(--radius);
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.sectionHeader {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.sectionTitle {
+	font-size: 24px;
+	font-weight: 600;
+	color: var(--text-color);
+	margin: 0;
+}
+
+.sectionDescription {
+	color: var(--text-color-soft);
+	margin: 0;
+}

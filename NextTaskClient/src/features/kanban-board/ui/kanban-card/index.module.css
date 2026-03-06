@@ -1,0 +1,298 @@
+.card {
+	background: var(--card-bg);
+	border: 1px solid var(--border-muted);
+	border-radius: 10px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.card:hover {
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+	transform: translateY(-2px);
+}
+
+.card.overdue {
+	border-color: var(--status-error-color, #ef4444);
+	background: color-mix(
+		in srgb,
+		var(--status-error-bg, rgba(239, 68, 68, 0.1)) 5%,
+		var(--card-bg)
+	);
+}
+
+.card.overdue:hover {
+	border-color: var(--status-error-color, #ef4444);
+	background: color-mix(
+		in srgb,
+		var(--status-error-bg, rgba(239, 68, 68, 0.1)) 10%,
+		var(--card-bg)
+	);
+}
+
+.cardHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
+	cursor: move;
+	padding: 14px;
+	padding-top: 10px;
+	padding-bottom: 8px;
+	transition: background 0.3s ease;
+}
+
+.cardHeader:hover {
+	background-color: var(--clr-neutral-100);
+}
+
+.card.dragging {
+	opacity: 0.3;
+	border: 2px dashed var(--border-muted);
+	background: var(--surface-muted);
+}
+
+.cardTitle {
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--text-color);
+	flex: 1;
+	margin-right: 8px;
+}
+
+.cardMenu {
+	position: relative;
+}
+
+.menuBtn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	background: transparent;
+	border: none;
+	border-radius: 6px;
+	color: var(--text-color-soft);
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.menuBtn:hover {
+	background: var(--hover-bg-color);
+	color: var(--text-color);
+}
+
+.menuDropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 4px;
+	background: var(--card-bg);
+	border: 1px solid var(--border-muted);
+	border-radius: 8px;
+	box-shadow: var(--shadow);
+	min-width: 150px;
+	z-index: 100;
+	overflow: hidden;
+	padding: 4px;
+}
+
+.menuItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 10px 14px;
+	background: transparent;
+	border: none;
+	font-size: 0.9rem;
+	border-radius: 8px;
+	color: var(--text-color);
+	cursor: pointer;
+	transition: background 0.15s ease;
+	text-align: left;
+}
+
+.menuItem:hover {
+	background: var(--hover-bg-color);
+}
+
+.menuItemDelete {
+	color: #ef4444;
+}
+
+.menuItemDelete:hover {
+	background: rgba(239, 68, 68, 0.1);
+}
+
+.cardContent {
+	font-size: 0.85rem;
+	color: var(--text-color-soft);
+	padding: 14px;
+	padding-top: 4px;
+	line-height: 1.5;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.cardContent p {
+	margin-bottom: 8px;
+}
+
+.cardFooter {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-bottom: 6px;
+	border-bottom: 1px solid var(--border-muted);
+	margin-bottom: 6px;
+}
+
+.cardMeta {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.priority {
+	display: inline-block;
+	padding: 3px 8px;
+	border-radius: 4px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.priority_low {
+	background: rgba(34, 197, 94, 0.12);
+	color: #16a34a;
+}
+
+.priority_medium {
+	background: rgba(245, 158, 11, 0.12);
+	color: #d97706;
+}
+
+.priority_high {
+	background: rgba(239, 68, 68, 0.12);
+	color: #dc2626;
+}
+
+.cardAssignees {
+	display: flex;
+	align-items: center;
+}
+
+.avatarStack {
+	display: flex;
+}
+
+.avatar {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--primary-color);
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.75rem;
+	font-weight: 600;
+	border: 2px solid var(--card-bg);
+	margin-left: -8px;
+}
+
+.avatarImg {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: 50%;
+}
+
+.avatar:first-child {
+	margin-left: 0;
+}
+
+.avatarMore {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--surface-muted);
+	color: var(--text-color-soft);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	font-weight: 600;
+	border: 2px solid var(--card-bg);
+	margin-left: -8px;
+}
+
+.noAssignee {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.8rem;
+	color: var(--text-color-soft);
+}
+
+.noAssigneeAvatar {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--surface-muted);
+	border: 1px dashed var(--border-muted);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-color-soft);
+}
+
+.dueDate {
+	font-size: 0.8rem;
+	color: var(--text-color-soft);
+	width: max-content;
+}
+
+.dueDate.overdueDueDate {
+	color: var(--status-error-color, #ef4444);
+	background: var(--status-error-bg, rgba(239, 68, 68, 0.1));
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-weight: 600;
+}
+
+@media (max-width: 768px) {
+	.card {
+		padding: 12px;
+	}
+
+	.cardTitle {
+		font-size: 0.9rem;
+	}
+
+	.cardContent {
+		font-size: 0.8rem;
+	}
+
+	.priority {
+		font-size: 0.65rem;
+		padding: 2px 6px;
+	}
+
+	.avatar,
+	.avatarMore {
+		width: 24px;
+		height: 24px;
+		font-size: 0.65rem;
+	}
+
+	.dueDate {
+		font-size: 0.75rem;
+	}
+}

@@ -1,0 +1,49 @@
+.taskForm {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 20px;
+}
+
+.formGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.formGroup label {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--text-color-secondary);
+}
+
+.formRow {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+.textarea {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid var(--border-muted);
+	border-radius: var(--radius);
+	background: var(--bg-color);
+	color: var(--text-color);
+	font-size: 14px;
+	font-family: inherit;
+	resize: vertical;
+	min-height: 80px;
+	transition:
+		border-color 0.2s,
+		box-shadow 0.2s;
+}
+
+.textarea:focus {
+	outline: none;
+	border-color: var(--primary-color);
+	box-shadow: 0 0 0 3px rgba(158, 26, 176, 0.1);
+}
+
+.textarea::placeholder {
+	color: var(--text-color-soft);
+}

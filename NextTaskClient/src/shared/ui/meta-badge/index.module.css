@@ -1,0 +1,39 @@
+.badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 12px;
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: color-mix(
+		in srgb,
+		var(--text-color) 70%,
+		var(--text-color-soft) 30%
+	);
+	background: color-mix(
+		in srgb,
+		var(--surface-muted) 80%,
+		rgba(255, 255, 255, 0.08) 20%
+	);
+	border: 1px solid
+		color-mix(in srgb, var(--border-muted) 85%, var(--primary-muted) 15%);
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+}
+
+.content {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.emphasis {
+	font-weight: 600;
+}

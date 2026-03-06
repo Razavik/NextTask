@@ -1,0 +1,76 @@
+.authContainer {
+	max-width: 410px;
+	margin: 80px auto;
+	padding: 40px 35px;
+	background: var(--card-bg);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	display: flex;
+	flex-direction: column;
+	gap: 19px;
+}
+
+.authForm {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.title {
+	text-align: center;
+	margin-bottom: 18px;
+	font-size: 1.8rem;
+}
+
+.formGroup {
+	margin-bottom: 16px;
+}
+
+.label {
+	display: block;
+	margin-bottom: 8px;
+	color: var(--text-color);
+	font-weight: 500;
+	line-height: 1;
+}
+
+.input {
+	width: 100%;
+	padding: 12px;
+	border: 1px solid var(--input-border-color);
+	border-radius: var(--radius);
+	background-color: var(--input-bg-color);
+	color: var(--text-color);
+	font-size: 16px;
+	transition: all 0.2s ease;
+}
+
+.input:focus {
+	outline: none;
+	border-color: var(--primary-color);
+	box-shadow: 0 0 0 3px rgba(158, 26, 176, 0.3);
+}
+
+.textCenter {
+	text-align: center;
+	margin-top: 16px;
+}
+
+.authLink {
+	color: var(--primary-color);
+	text-decoration: none;
+	font-weight: 500;
+}
+
+.authLink:hover {
+	text-decoration: underline;
+}
+
+.error {
+	color: #fca5a5;
+	background-color: #991b1b;
+	padding: 12px;
+	border-radius: var(--radius);
+	text-align: center;
+	margin-bottom: 16px;
+}

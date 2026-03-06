@@ -1,0 +1,92 @@
+.inputWrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	flex: 1;
+}
+
+.inputControl {
+	position: relative;
+	display: flex;
+	align-items: center;
+	height: 100%;
+}
+
+.leadingIcon {
+	position: absolute;
+	left: 12px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-color-soft);
+	pointer-events: none;
+}
+
+.input.withIcon {
+	padding-left: 40px;
+}
+
+.label {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--text-color-secondary);
+}
+
+.input {
+	width: 100%;
+	max-height: 44px;
+	height: 100%;
+	padding: 12px;
+	border: 1px solid var(--input-border-color);
+	border-radius: var(--radius);
+	background: var(--input-bg-color);
+	color: var(--text-color);
+	font-size: 16px;
+	transition: border-color 0.2s, box-shadow 0.2s;
+	overflow: visible !important;
+}
+
+.input:focus {
+	outline: none;
+	border-color: var(--primary-color);
+	box-shadow: 0 0 0 3px rgba(158, 26, 176, 0.25);
+}
+
+.input::placeholder {
+	color: var(--text-color-soft);
+}
+
+.input.error {
+	border-color: var(--priority-high-text);
+}
+
+.errorMessage {
+	font-size: 14px;
+	color: var(--priority-high-text);
+}
+
+.input[type="date"]::-webkit-calendar-picker-indicator {
+	filter: invert(1);
+}
+
+.input[type="date"]::-ms-input-placeholder { /* Edge */
+	color: var(--text-color-soft);
+}
+
+.input[type="date"]::-moz-placeholder { /* Firefox 19+ */
+	color: var(--text-color-soft);
+	opacity: 1;
+}
+
+.input[type="date"]::placeholder {
+	color: var(--text-color-soft);
+	opacity: 1;
+}
+
+/* Disabled state */
+.input:disabled {
+	color: #aaa;
+    border-color: var(--input-border-color);
+    cursor: not-allowed;
+    opacity: 0.9;
+}

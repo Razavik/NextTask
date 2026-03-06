@@ -1,0 +1,505 @@
+/* Для совместимости с компонентом, который использует styles.section */
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 12px 16px;
+	background: var(--surface-elevated);
+	border: 1px solid var(--input-border-color);
+	border-radius: 16px;
+	box-shadow: none;
+	margin-bottom: 0;
+}
+
+/* Правая панель действий (поиск + кнопка приглашения) */
+.actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: nowrap;
+}
+
+.titleSection {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.title {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--text-color);
+	margin: 0;
+}
+
+.inviteBtn {
+	padding: 8px 16px;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+/* Поле поиска по участникам */
+
+.searchInput input {
+	padding-top: 6px;
+	padding-bottom: 6px;
+	height: 38px;
+	font-size: 14px;
+}
+
+.inviteForm {
+	padding: 16px 20px;
+	background: var(--hover-bg-color);
+	border-bottom: 1px solid var(--input-border-color);
+}
+
+@media (max-width: 640px) {
+	.header {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 10px;
+	}
+	.actions {
+		width: 100%;
+		gap: 8px;
+	}
+	.searchInput {
+		flex: 0;
+		flex-shrink: 0 !important;
+		min-width: 0;
+		width: 100%;
+	}
+	.inviteBtn {
+		flex: 1;
+		width: 100%;
+	}
+}
+
+.inviteFormContent {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.inviteActions {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+}
+
+.cancelBtn {
+	background: transparent !important;
+	color: var(--text-color-soft) !important;
+	border: 1px solid var(--input-border-color) !important;
+	padding: 8px 16px !important;
+	font-size: 0.9rem;
+}
+
+.cancelBtn:hover {
+	background: var(--hover-bg-color) !important;
+	color: var(--text-color) !important;
+}
+
+.submitBtn {
+	background: var(--primary-color) !important;
+	color: white !important;
+	border: 1px solid var(--primary-color) !important;
+	padding: 8px 16px !important;
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+.submitBtn:hover:not(:disabled) {
+	background: var(--primary-hover) !important;
+	border-color: var(--primary-hover) !important;
+}
+
+.submitBtn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.membersList {
+	overflow: visible; /* предотвращаем обрезание выпадашки внутри скролл-контейнера */
+}
+
+.memberItem {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px;
+	border-bottom: 1px solid var(--input-border-color);
+	position: relative;
+	background: transparent;
+	transition:
+		background-color 0.18s ease,
+		box-shadow 0.18s ease;
+}
+
+.memberItem:last-child {
+	border-bottom: none;
+	border-radius: 0 0 16px 16px;
+}
+
+.memberItem:hover {
+	background: var(--surface-muted);
+	box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.noResults {
+	position: relative;
+	min-height: 160px;
+	padding: 32px 28px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	border-radius: 0 0 16px 16px;
+	color: var(--text-color-soft);
+	background: transparent;
+	text-align: center;
+}
+
+.noResults::before {
+	content: "";
+	position: absolute;
+	inset: 12px;
+	border-radius: 14px;
+	border: 1px dashed
+		color-mix(in srgb, var(--input-border-color) 70%, transparent 30%);
+	opacity: 0.8;
+}
+
+.noResultsIcon {
+	position: relative;
+	width: 52px;
+	height: 52px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.noResultsText {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.noResultsTitle {
+	font-weight: 600;
+	color: var(--text-color);
+}
+
+.noResultsHint {
+	font-size: 0.88rem;
+	color: color-mix(
+		in srgb,
+		var(--text-color-soft) 88%,
+		var(--text-color) 12%
+	);
+}
+
+.memberInfo {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex: 1;
+	min-width: 0;
+}
+
+.memberAvatar {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: var(--primary-color);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: white;
+	font-weight: 600;
+	font-size: 1rem;
+	flex-shrink: 0;
+	overflow: hidden;
+}
+
+.avatarImage {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.memberDetails {
+	flex: 1;
+	min-width: 0;
+}
+
+.memberName {
+	font-weight: 500;
+	color: var(--text-color);
+	font-size: 0.95rem;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 2px;
+}
+
+.youBadge {
+	font-size: 0.8rem;
+	color: var(--primary-color);
+	font-weight: 600;
+}
+
+.memberEmail {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.85rem;
+	color: var(--text-color-soft);
+	margin-bottom: 2px;
+}
+
+.memberJoined {
+	font-size: 0.8rem;
+	color: var(--text-color-soft);
+	opacity: 0.8;
+}
+
+.memberRole {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 12px;
+	border-radius: 12px;
+	background: var(--nav-bg-color);
+	border: 1px solid var(--input-border-color);
+	position: relative; /* якорь для выпадающего меню */
+	white-space: nowrap;
+	line-height: 1; /* предотвращаем вертикальный рост */
+	cursor: pointer;
+}
+
+/* Единый контейнер управления ролью (плашка + шестерёнка) */
+.roleControl {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	position: relative;
+}
+
+.roleText {
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: var(--text-color);
+	white-space: nowrap;
+}
+
+/* ====== Кастомный дропдаун ролей ====== */
+
+.roleDropdownMenu {
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	width: 150px;
+	white-space: nowrap; /* не сжимать подписи ролей */
+	background: var(--card-bg);
+	border: 1px solid var(--input-border-color);
+	border-radius: var(--radius);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+	z-index: 1200;
+	overflow: hidden;
+	will-change: transform;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Кнопка-шестерёнка справа от плашки роли */
+.roleGearBtn {
+	background: transparent;
+	border: 1px solid var(--input-border-color);
+	color: var(--text-color-soft);
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition:
+		background-color 0.2s,
+		color 0.2s,
+		border-color 0.2s;
+}
+
+.roleGearBtn:hover {
+	background: var(--hover-bg-color);
+	color: var(--text-color);
+	border-color: var(--text-color-soft);
+}
+
+.roleDropdownItem {
+	width: 100%;
+	padding: 10px 12px;
+	background: transparent;
+	border: none;
+	text-align: left;
+	font-size: 0.9rem;
+	color: var(--text-color);
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.roleDropdownItem:hover {
+	background: var(--secondary-color);
+}
+
+/* Опасное действие в меню ролей */
+.dangerItem {
+	color: var(--danger-color);
+}
+.dangerItem:hover {
+	background: color-mix(in oklab, var(--danger-color) 15%, transparent);
+}
+
+/* Scrollbar для списка участников */
+.membersList::-webkit-scrollbar {
+	width: 6px;
+}
+
+.membersList::-webkit-scrollbar-track {
+	background: var(--nav-bg-color);
+}
+
+.membersList::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-gray);
+	border-radius: 3px;
+}
+
+.membersList::-webkit-scrollbar-thumb:hover {
+	background: var(--scrollbar-gray-hover);
+}
+
+@media (max-width: 768px) {
+	.header {
+		padding: 12px 16px;
+		flex-direction: column;
+		gap: 12px;
+		align-items: stretch;
+	}
+
+	.actions {
+		width: 100%;
+		gap: 10px;
+	}
+
+	.searchInput {
+		flex: 2;
+		min-width: 160px;
+		flex-shrink: 0;
+	}
+
+	.titleSection {
+		justify-content: center;
+	}
+
+	.inviteBtn {
+		flex: 1;
+		width: 100%;
+		justify-content: center;
+	}
+
+	.inviteForm {
+		padding: 12px 16px;
+	}
+
+	.inviteActions {
+		flex-direction: column;
+	}
+
+	.memberItem {
+		padding: 12px 16px;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+	}
+
+	.memberInfo {
+		gap: 10px;
+	}
+
+	.memberAvatar {
+		width: 36px;
+		height: 36px;
+		font-size: 0.9rem;
+	}
+
+	.memberRole {
+		align-self: flex-start;
+		margin-right: 0;
+	}
+}
+
+@media (max-width: 600px) {
+	.header {
+		padding: 10px 12px;
+	}
+
+	.inviteForm {
+		padding: 10px 12px;
+	}
+
+	.memberItem {
+		padding: 10px 12px;
+	}
+
+	.memberDetails {
+		font-size: 0.9rem;
+	}
+
+	.memberName {
+		font-size: 0.9rem;
+	}
+
+	.memberEmail {
+		font-size: 0.8rem;
+	}
+
+	.memberJoined {
+		font-size: 0.75rem;
+	}
+}
+
+@media (max-width: 425px) {
+	.actions {
+		flex-direction: column;
+	}
+
+	.searchInput {
+		flex: 1;
+	}
+}
+
+/* Кнопка чата */
+.chatBtn {
+	background: none;
+	border: none;
+	color: var(--primary-color);
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition:
+		background 0.2s,
+		color 0.2s;
+	margin-left: 8px;
+}
+
+.chatBtn:hover {
+	background: var(--hover-bg-color);
+	color: var(--primary-hover);
+}

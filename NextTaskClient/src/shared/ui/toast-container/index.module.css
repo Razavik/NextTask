@@ -1,0 +1,251 @@
+/* Контейнер для всех уведомлений */
+.toastContainer {
+	position: fixed;
+	top: 24px;
+	right: 24px;
+	z-index: 10000;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	max-width: 420px;
+	pointer-events: none;
+}
+/* Отдельное уведомление */
+.toast {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 16px;
+	background: color-mix(
+		in srgb,
+		var(--card-bg) 70%,
+		var(--surface-contrast) 30%
+	);
+	border-radius: 14px;
+	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.09);
+	border: 1px solid
+		color-mix(in srgb, var(--toast-border) 70%, transparent 30%);
+	backdrop-filter: blur(18px) saturate(120%);
+	pointer-events: auto;
+	position: relative;
+	overflow: hidden;
+	animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: all 0.3s ease;
+}
+
+.toast > * {
+	position: relative;
+	z-index: 1;
+}
+
+.toast:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 18px 46px rgba(0, 0, 0, 0.11);
+}
+
+/* Класс для плавного скрытия */
+.toast.removing {
+	animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Анимации */
+@keyframes slideInRight {
+	from {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+@keyframes slideOutRight {
+	from {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+}
+
+/* Типы уведомлений */
+.toast.success {
+	border-left: 4px solid var(--success-color);
+}
+
+.toast.success .toastIcon {
+	color: var(--success-color);
+	background: var(--success-soft-bg);
+}
+
+.toast.error {
+	border-left: 4px solid var(--danger-color);
+}
+
+.toast.error .toastIcon {
+	color: var(--danger-color);
+	background: var(--danger-soft-bg);
+}
+
+.toast.warning {
+	border-left: 4px solid var(--warning-color);
+}
+
+.toast.warning .toastIcon {
+	color: var(--warning-color);
+	background: var(--warning-soft-bg);
+}
+
+.toast.info {
+	border-left: 4px solid var(--primary-color);
+}
+
+.toast.info .toastIcon {
+	color: var(--primary-color);
+	background: var(--hover-bg-color);
+}
+
+.toast.message {
+	border-left: 4px solid var(--primary-color);
+	padding: 12px 14px;
+	min-width: 300px;
+}
+
+.toast.message .toastIcon {
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	background: transparent;
+}
+
+.toast.message .toastIcon img {
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.toast.message .toastIcon + .toastContent {
+	margin-left: 2px;
+}
+
+/* Иконка */
+.toastIcon {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition: all 0.3s ease;
+}
+
+/* Контент */
+.toastContent {
+	flex-grow: 1;
+	min-width: 0;
+}
+
+.toastTitle {
+	font-weight: 700;
+	font-size: 0.95rem;
+	color: var(--text-color);
+	margin-bottom: 2px;
+}
+
+.toastMessage {
+	font-size: 0.88rem;
+	color: var(--text-color-soft);
+	margin: 0;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+/* Кнопка закрытия */
+.toastClose {
+	background: none;
+	border: none;
+	color: var(--text-color-soft);
+	cursor: pointer;
+	border-radius: 4px;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transform-origin: center;
+	transition: all 0.5s ease;
+}
+
+.toastClose:hover {
+	background: var(--hover-bg-color);
+	color: var(--text-color);
+	transform: scale(1.1);
+}
+
+.toastClose:active {
+	transform: scale(0.95);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+	.toastContainer {
+		bottom: 16px;
+		right: 16px;
+		left: 16px;
+		max-width: none;
+	}
+
+	.toast {
+		padding: 14px 16px;
+		gap: 10px;
+	}
+
+	.toastIcon {
+		width: 28px;
+		height: 28px;
+	}
+
+	.toastTitle {
+		font-size: 0.9rem;
+	}
+
+	.toastMessage {
+		font-size: 0.8rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.toastContainer {
+		bottom: 12px;
+		right: 12px;
+		left: 12px;
+	}
+
+	.toast {
+		padding: 12px 14px;
+		gap: 8px;
+		border-radius: 10px;
+	}
+
+	.toastIcon {
+		width: 24px;
+		height: 24px;
+	}
+
+	.toastTitle {
+		font-size: 0.85rem;
+	}
+
+	.toastMessage {
+		font-size: 0.75rem;
+	}
+}

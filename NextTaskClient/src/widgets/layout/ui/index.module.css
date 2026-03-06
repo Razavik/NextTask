@@ -1,0 +1,212 @@
+.layout {
+	display: flex;
+	min-height: 100vh;
+	overflow: hidden;
+}
+
+.mainContent {
+	flex-grow: 1;
+	padding: 24px;
+	padding-bottom: 100px; /* место под нижнее меню (Dock) */
+	position: relative;
+	overflow-y: auto;
+	height: 100vh;
+}
+
+/* Регистрация анимируемых custom properties для позиций сфер */
+@property --orb1-x {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 14%;
+}
+@property --orb1-y {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 40%;
+}
+@property --orb2-x {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 100%;
+}
+@property --orb2-y {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 3%;
+}
+@property --orb4-x {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 110%;
+}
+@property --orb4-y {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 110%;
+}
+
+/* Цветные "круги" (орбы) под контентом. Они не размыты сами по себе,
+   но будут размываться сквозь backdrop-filter стеклянных поверхностей. */
+.mainContent::after {
+	content: "";
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+	z-index: -1;
+	/* Анимации сфер с разной длительностью/направлением для естественности */
+	animation:
+		orb1 22s ease-in-out infinite alternate,
+		orb2 28s ease-in-out infinite alternate-reverse,
+		orb4 30s ease-in-out infinite alternate-reverse;
+	background:
+		radial-gradient(
+			circle at var(--orb1-x) var(--orb1-y),
+			var(--decor-orb-strong) 0 100px,
+			transparent 100px
+		),
+		radial-gradient(
+			circle at var(--orb2-x) var(--orb2-y),
+			var(--decor-orb-soft) 0 90px,
+			transparent 80px
+		),
+		radial-gradient(
+			circle at var(--orb4-x) var(--orb4-y),
+			color-mix(in srgb, var(--decor-orb-strong) 60%, transparent) 0 200px,
+			transparent 10%
+		),
+		/* маленькие декоративные кружочки */
+		radial-gradient(
+				circle at 10% 15%,
+				var(--decor-orb-highlight) 0 5px,
+				transparent 6px
+			),
+		radial-gradient(
+			circle at 20% 30%,
+			var(--decor-orb-soft) 0 4px,
+			transparent 5px
+		),
+		radial-gradient(
+			circle at 18% 75%,
+			color-mix(in srgb, var(--decor-orb-contrast) 70%, transparent) 0
+				3.5px,
+			transparent 4.5px
+		),
+		radial-gradient(
+			circle at 32% 60%,
+			var(--decor-orb-soft) 0 4px,
+			transparent 5px
+		),
+		radial-gradient(
+			circle at 40% 35%,
+			var(--decor-orb-highlight) 0 3px,
+			transparent 4px
+		),
+		radial-gradient(
+			circle at 55% 82%,
+			color-mix(in srgb, var(--decor-orb-strong) 75%, transparent) 0 4px,
+			transparent 5px
+		),
+		radial-gradient(
+			circle at 62% 20%,
+			var(--decor-orb-highlight) 0 3.5px,
+			transparent 4.5px
+		),
+		radial-gradient(
+			circle at 70% 65%,
+			color-mix(in srgb, var(--decor-orb-soft) 80%, transparent) 0 4px,
+			transparent 5px
+		),
+		radial-gradient(
+			circle at 80% 55%,
+			var(--decor-orb-contrast) 0 5px,
+			transparent 6px
+		),
+		radial-gradient(
+			circle at 72% 80%,
+			color-mix(in srgb, var(--decor-orb-soft) 70%, transparent) 0 4px,
+			transparent 5px
+		),
+		radial-gradient(
+			circle at 85% 38%,
+			var(--decor-orb-strong) 0 3.5px,
+			transparent 4.5px
+		),
+		radial-gradient(
+			circle at 90% 18%,
+			var(--decor-orb-contrast) 0 3.5px,
+			transparent 4.5px
+		),
+		radial-gradient(
+			circle at 95% 85%,
+			var(--decor-orb-soft) 0 5px,
+			transparent 6px
+		),
+		radial-gradient(
+			circle at 8% 90%,
+			color-mix(in srgb, var(--decor-orb-strong) 65%, transparent) 0 4px,
+			transparent 5px
+		),
+		radial-gradient(
+			circle at 96% 60%,
+			var(--decor-orb-highlight) 0 4px,
+			transparent 5px
+		);
+	opacity: 0.05;
+}
+
+/* Ключевые кадры движения сфер */
+@keyframes orb1 {
+	from {
+		--orb1-x: 12%;
+		--orb1-y: 48%;
+	}
+	to {
+		--orb1-x: 18%;
+		--orb1-y: 54%;
+	}
+}
+
+@keyframes orb2 {
+	from {
+		--orb2-x: 96%;
+		--orb2-y: 6%;
+	}
+	to {
+		--orb2-x: 88%;
+		--orb2-y: 12%;
+	}
+}
+
+@keyframes orb4 {
+	from {
+		--orb4-x: 110%;
+		--orb4-y: 110%;
+	}
+	to {
+		--orb4-x: 100%;
+		--orb4-y: 100%;
+	}
+}
+
+/* glassSurface вынесен в src/styles/glass.module.css */
+
+.mainContent::-webkit-scrollbar {
+	width: 4px;
+}
+
+.mainContent::-webkit-scrollbar-track {
+	background: var(--nav-bg-color);
+	border-radius: 4px;
+}
+
+.mainContent::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-primary);
+	border-radius: 4px;
+	transition: background 0.2s;
+}
+.mainContent::-webkit-scrollbar-thumb:hover {
+	background: var(--scrollbar-primary-hover);
+}

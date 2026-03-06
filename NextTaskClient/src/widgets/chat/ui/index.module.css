@@ -1,0 +1,111 @@
+.chatContainer {
+	position: fixed;
+	display: flex;
+	flex-direction: column;
+	height: min(600px, calc(100vh - 40px));
+	max-height: calc(100vh - 24px);
+	width: min(600px, calc(100vw - 40px));
+	max-width: calc(100vw - 24px);
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--glass-border);
+	border-radius: calc(var(--radius) * 1.5);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	overflow: hidden;
+	z-index: 1000;
+	transition:
+		height 0.25s ease,
+		width 0.25s ease,
+		box-shadow 0.25s ease,
+		left 0.25s ease,
+		top 0.25s ease,
+		opacity 0.22s ease,
+		transform 0.22s ease;
+	transform-origin: center;
+	opacity: 1;
+	transform: translateY(0) scale(1);
+}
+
+.chatContainer.dragging {
+	box-shadow: var(--glass-shadow);
+	cursor: move;
+	transition:
+		height 0.3s ease,
+		width 0.3s ease,
+		box-shadow 0.3s ease,
+		transform 0.3s ease;
+	transform: scale(1.02);
+}
+
+/* Анимации входа/выхода */
+.entering {
+	opacity: 0;
+	transform: translateY(8px) scale(0.98);
+}
+
+.leaving {
+	opacity: 0;
+	transform: translateY(8px) scale(0.98);
+}
+
+.chatContent {
+	display: flex;
+	flex: 1;
+	overflow: hidden;
+}
+
+.emptyState {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	height: 100%;
+}
+
+.emptyState svg {
+	opacity: 0.4;
+}
+
+.loadingState {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+}
+
+.messagesContainer {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+/* Планшеты и узкие экраны */
+@media (max-width: 768px) {
+	.chatContainer {
+		width: calc(100% - 30px);
+		height: calc(100% - 30px);
+		max-width: 100vw;
+		max-height: 100vh;
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+		transform-origin: bottom center;
+		top: 15px !important;
+		left: 15px !important;
+		right: 15px !important;
+		bottom: 15px !important;
+	}
+
+	.chatContent {
+		flex-direction: column;
+		height: 100%;
+	}
+
+	.messagesContainer {
+		width: 100%;
+		height: 100%;
+		flex: 1;
+	}
+}

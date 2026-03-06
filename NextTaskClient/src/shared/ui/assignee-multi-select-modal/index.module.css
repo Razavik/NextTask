@@ -1,0 +1,159 @@
+.wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.label {
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--text-color);
+}
+
+.trigger {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	width: 100%;
+	padding: 16px 20px;
+	border-radius: var(--radius-lg, 14px);
+	background: linear-gradient(
+		120deg,
+		color-mix(
+				in srgb,
+				var(--card-bg) 70%,
+				var(--primary-muted, rgba(138, 43, 226, 0.25)) 30%
+			)
+			0%,
+		color-mix(in srgb, var(--card-bg) 85%, rgba(255, 255, 255, 0.05) 15%)
+			38%,
+		color-mix(
+				in srgb,
+				var(--surface-muted, rgba(255, 255, 255, 0.08)) 55%,
+				rgba(0, 0, 0, 0) 45%
+			)
+			100%
+	);
+	border: 1px solid
+		color-mix(in srgb, var(--primary-color) 18%, var(--border-muted) 82%);
+	color: var(--text-color);
+	cursor: pointer;
+	text-align: left;
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease,
+		border-color 0.2s ease;
+}
+
+.trigger:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+	box-shadow: none;
+}
+
+.trigger:not(:disabled):hover,
+.trigger:not(:disabled):focus-visible {
+	border-color: color-mix(
+		in srgb,
+		var(--primary-color) 42%,
+		var(--border-muted) 58%
+	);
+}
+
+.trigger:focus-visible {
+	outline: none;
+}
+
+.triggerIcon {
+	width: 42px;
+	height: 42px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 14px;
+	background: var(--primary-color);
+	color: var(--text-on-accent, #ffffff);
+}
+
+.triggerContent {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.triggerSummary {
+	font-weight: 700;
+	font-size: 0.95rem;
+	color: var(--text-color);
+	letter-spacing: 0.01em;
+}
+
+.triggerPlaceholder {
+	font-size: 0.94rem;
+	color: var(--text-color-soft);
+}
+
+.chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.chip,
+.chipMore {
+	padding: 5px 12px;
+	border-radius: 999px;
+	font-size: 0.78rem;
+	font-weight: 600;
+	background: color-mix(
+		in srgb,
+		var(--surface-muted) 85%,
+		rgba(255, 255, 255, 0.08) 15%
+	);
+	color: var(--text-color);
+	border: 1px solid
+		color-mix(in srgb, var(--border-muted) 86%, var(--primary-color) 14%);
+}
+
+.chipMore {
+	background: color-mix(in srgb, var(--primary-color) 24%, transparent);
+	color: var(--primary-color);
+}
+
+.counter {
+	font-size: 0.78rem;
+	font-weight: 700;
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: color-mix(
+		in srgb,
+		var(--surface-muted) 70%,
+		rgba(255, 255, 255, 0.1) 30%
+	);
+	color: var(--primary-color);
+	border: 1px solid
+		color-mix(in srgb, var(--primary-color) 28%, var(--border-muted) 72%);
+}
+
+.modalContent {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	padding-top: 8px;
+}
+
+.modalFooter {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+}
+
+.footerActions {
+	width: 100%;
+	display: flex;
+	justify-content: end;
+	gap: 10px;
+}

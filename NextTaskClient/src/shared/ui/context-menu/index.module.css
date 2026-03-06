@@ -1,0 +1,94 @@
+.contextMenuWrapper {
+	position: relative;
+	display: inline-block;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	margin: 0 -8px;
+}
+
+.contextMenuWrapper.active {
+	opacity: 1;
+}
+
+[class*="message"]:hover > .contextMenuWrapper {
+	opacity: 1;
+}
+
+.trigger {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px;
+	border-radius: 24px;
+	cursor: pointer;
+	color: var(--text-secondary);
+	transition: all 0.2s ease;
+	background: transparent;
+	border: 1px solid var(--input-border-color);
+}
+
+.trigger:hover {
+	background: var(--card-bg);
+	color: var(--text-color);
+}
+
+.menuContainer {
+	position: absolute;
+	bottom: 105%;
+	left: -70px;
+	z-index: 1000;
+	min-width: 160px;
+	background: var(--card-bg);
+	border: 1px solid var(--input-border-color);
+	border-radius: 8px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+	margin-top: 4px;
+}
+
+[class*="messageOther"] .menuContainer {
+	right: -70px;
+	left: auto;
+}
+
+.menuList {
+	list-style: none;
+	margin: 0;
+	padding: 4px;
+}
+
+.menuItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	color: var(--text-color);
+	font-size: 0.9rem;
+}
+
+.menuItem:hover {
+	background: var(--bg-color);
+}
+
+.menuItem.danger {
+	color: var(--error-color);
+}
+
+.menuItem.danger:hover {
+	background: var(--error-bg);
+}
+
+.menuIcon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+}
+
+.menuLabel {
+	flex: 1;
+}
