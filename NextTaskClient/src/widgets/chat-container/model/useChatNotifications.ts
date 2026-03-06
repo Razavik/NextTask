@@ -72,6 +72,10 @@ export const useChatNotifications = ({
 					? (msg as { message: Message }).message
 					: (msg as Message);
 
+			if (messagePayload.sender_id === currentUserId) {
+				return;
+			}
+
 			const k = makeKey(messagePayload);
 			const ts = recentRef.get(k);
 			if (ts && now - ts <= TTL) return;

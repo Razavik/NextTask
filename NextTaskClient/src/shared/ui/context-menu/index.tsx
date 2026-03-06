@@ -13,11 +13,28 @@ interface ContextMenuProps {
 	options: ContextMenuOption[];
 	onSelect: (value: string) => void;
 	children?: React.ReactNode;
+	isOpen?: boolean;
+	onOpenChange?: (isOpen: boolean) => void;
 }
 
-const ContextMenu: FC<ContextMenuProps> = ({ options, onSelect, children }) => {
-	const [isOpen, setIsOpen] = useState(false);
+const ContextMenu: FC<ContextMenuProps> = ({
+	options,
+	onSelect,
+	children,
+	isOpen: controlledIsOpen,
+	onOpenChange,
+}) => {
+	const [internalIsOpen, setInternalIsOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
+	const isControlled = controlledIsOpen !== undefined;
+	const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
+
+	const setIsOpen = (value: boolean) => {
+		if (!isControlled) {
+			setInternalIsOpen(value);
+		}
+		onOpenChange?.(value);
+	};
 
 	// Закрытие меню при клике вне его области
 	useEffect(() => {

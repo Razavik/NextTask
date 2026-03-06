@@ -262,7 +262,7 @@ async def websocket_personal_chat(websocket: WebSocket, token: str = Query(...))
             db.close()
             
     except Exception as e:
-        await websocket.close(code=1011, reason=str(e))
+        await websocket.close(code=1011, reason="Internal server error")
 
 @router.websocket("/ws/{chat_id}")
 async def websocket_workspace_chat(websocket: WebSocket, chat_id: int, token: str = Query(...)):
@@ -864,6 +864,7 @@ def get_workspace_chat_history(
             chat_id=wm.chat_id,
             sender_id=wm.sender_id,
             content=wm.content,
+            is_read=wm.is_read,
             is_edited=wm.is_edited,
             is_pinned=wm.is_pinned,
             reply_to_id=wm.reply_to_id,

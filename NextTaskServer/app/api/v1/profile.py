@@ -1,18 +1,38 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 import os
 import uuid
 from typing import Optional
 import base64
+import json
 from pydantic import BaseModel
 import mimetypes
 
 from app.database.database import get_db
 from app.models.user import User
-from app.schemas.user import ProfileResponse, ProfileUpdate, PasswordChange
+from app.schemas.user import ProfileResponse, ProfileUpdate, PasswordChange, UserSettings
 from app.core.security import get_current_active_user
 
 router = APIRouter()
+
+DEFAULT_SETTINGS = UserSettings().model_dump()
+
+def ensure_settings_column(db: Session):
+    try:
+        db.execute(text("ALTER TABLE users ADD COLUMN settings_json TEXT"))
+        db.commit()
+    except Exception:
+        db.rollback()
+
+def parse_user_settings(raw: Optional[str]) -> UserSettings:
+    if not raw:
+        return UserSettings(**DEFAULT_SETTINGS)
+    try:
+        parsed = json.loads(raw)
+        return UserSettings(**{**DEFAULT_SETTINGS, **parsed})
+    except Exception:
+        return UserSettings(**DEFAULT_SETTINGS)
 
 # Для загрузки аватаров (в продакшене использовать S3 или другое хранилище)
 UPLOAD_DIR = "uploads"
@@ -49,13 +69,17 @@ def to_profile_response(user: User) -> ProfileResponse:
         position=user.position,
         avatar=_avatar_to_base64(user.avatar),
         created_at=user.created_at,
+        settings=parse_user_settings(user.settings_json),
     )
 
 @router.get("/me", response_model=ProfileResponse)
 def get_profile(
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """Получить профиль текущего пользователя"""
+    ensure_settings_column(db)
+    db.refresh(current_user)
     return to_profile_response(current_user)
 
 @router.put("/me", response_model=ProfileResponse)
@@ -65,10 +89,16 @@ def update_profile(
     db: Session = Depends(get_db)
 ):
     """Обновить профиль текущего пользователя"""
+    ensure_settings_column(db)
     update_data = profile_data.model_dump(exclude_unset=True)
+
+    settings = update_data.pop("settings", None)
     
     for field, value in update_data.items():
         setattr(current_user, field, value)
+
+    if settings is not None:
+        current_user.settings_json = json.dumps(settings)
     
     db.commit()
     db.refresh(current_user)

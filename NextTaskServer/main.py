@@ -4,17 +4,29 @@ from fastapi.staticfiles import StaticFiles
 import os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from sqlalchemy import text
 
 load_dotenv()
 
-from app.database.database import engine, Base
+from app.database.database import engine, Base, SessionLocal
 from app.api.v1 import auth, workspaces, tasks, profile, comments, invites, chat, me, task_time_tracks, task_planning
 
 Base.metadata.create_all(bind=engine)
 
+def ensure_user_settings_column():
+    db = SessionLocal()
+    try:
+        db.execute(text("ALTER TABLE users ADD COLUMN settings_json TEXT"))
+        db.commit()
+    except Exception:
+        db.rollback()
+    finally:
+        db.close()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 NextTask Server is starting...")
+    ensure_user_settings_column()
     yield
     print("🛑 NextTask Server is shutting down...")
 

@@ -1,6 +1,7 @@
 import api from "@shared/api/axios";
 import { useChatStore } from "@entities/chat/model/chatStore";
 import { useAuthStore, type User } from "./authStore";
+import type { ProfileData } from "./profile.service";
 
 interface LoginRequest {
 	email: string;
@@ -98,6 +99,11 @@ class AuthService {
 					: "Ошибка получения данных пользователя";
 			throw new Error(msg);
 		}
+	}
+
+	async getCurrentProfile(): Promise<ProfileData> {
+		const response = await api.get<ProfileData>("/profile/me");
+		return response.data;
 	}
 	/**
 	 * Выход пользователя из системы

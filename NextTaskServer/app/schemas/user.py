@@ -2,6 +2,21 @@ from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from datetime import datetime
 
+class NotificationSettings(BaseModel):
+    emailNotifications: bool = True
+    pushNotifications: bool = False
+
+class HotkeySettings(BaseModel):
+    openSettings: str = "Ctrl+Shift+/"
+    openProfile: str = "Ctrl+Shift+P"
+    openPlanning: str = "Ctrl+Shift+L"
+    openChat: str = "Ctrl+Shift+C"
+
+class UserSettings(BaseModel):
+    theme: Optional[str] = None
+    notifications: NotificationSettings = NotificationSettings()
+    hotkeys: HotkeySettings = HotkeySettings()
+
 class UserBase(BaseModel):
     email: EmailStr
     name: Optional[str] = None
@@ -30,10 +45,12 @@ class UserResponse(UserBase):
 class ProfileResponse(UserBase):
     id: int
     created_at: Optional[datetime] = None
+    settings: Optional[UserSettings] = None
 
 class ProfileUpdate(BaseModel):
     name: Optional[str] = None
     position: Optional[str] = None
+    settings: Optional[UserSettings] = None
 
 class PasswordChange(BaseModel):
     current_password: str

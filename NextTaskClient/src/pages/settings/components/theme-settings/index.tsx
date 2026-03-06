@@ -1,10 +1,25 @@
 ﻿import { FC } from "react";
+import { profileService } from "@entities/user";
 import { useTheme } from "@shared/lib/hooks/useTheme";
 import type { Theme } from "@app/providers/theme-provider";
+import { collectCurrentUserSettings } from "@shared/lib/settings";
 import styles from "./index.module.css";
 
 const ThemeSettings: FC = () => {
 	const { theme, setTheme } = useTheme();
+
+	const handleThemeSelect = async (nextTheme: Theme) => {
+		setTheme(nextTheme);
+		try {
+			const current = collectCurrentUserSettings();
+			await profileService.updateSettings({
+				...current,
+				theme: nextTheme,
+			});
+		} catch {
+			// no-op
+		}
+	};
 
 	const themeOptions: {
 		value: Theme;
@@ -38,7 +53,9 @@ const ThemeSettings: FC = () => {
 							<button
 								key={option.value}
 								type="button"
-								onClick={() => setTheme(option.value)}
+								onClick={() =>
+									void handleThemeSelect(option.value)
+								}
 								className={`${styles.themeCard} ${isActive ? styles.themeCardActive : ""}`.trim()}
 								aria-pressed={isActive}
 							>

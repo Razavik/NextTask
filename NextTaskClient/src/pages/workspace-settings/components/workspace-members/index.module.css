@@ -1,4 +1,89 @@
 /* Для совместимости с компонентом, который использует styles.section */
+.sectionShell {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 18px;
+	border: 1px solid var(--input-border-color);
+	border-radius: 20px;
+	background: linear-gradient(
+		180deg,
+		var(--surface-elevated),
+		var(--card-bg)
+	);
+	box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+}
+
+.hero {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+	padding: 6px 2px 0;
+}
+
+.titleIcon {
+	width: 42px;
+	height: 42px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+	color: var(--primary-color);
+	flex-shrink: 0;
+}
+
+.subtitle {
+	margin: 4px 0 0;
+	font-size: 0.9rem;
+	color: var(--text-color-soft);
+	max-width: 620px;
+}
+
+.heroStats {
+	display: flex;
+	gap: 10px;
+}
+
+.statCard {
+	min-width: 120px;
+	padding: 12px 14px;
+	border-radius: 16px;
+	background: var(--nav-bg-color);
+	border: 1px solid var(--input-border-color);
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.statValue {
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: var(--text-color);
+}
+
+.statLabel {
+	font-size: 0.78rem;
+	color: var(--text-color-soft);
+}
+
+.toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	padding: 14px 16px;
+	background: var(--surface-elevated);
+	border: 1px solid var(--input-border-color);
+	border-radius: 16px;
+}
+
+.toolbarHint {
+	font-size: 0.85rem;
+	color: var(--text-color-soft);
+	white-space: nowrap;
+}
 .header {
 	display: flex;
 	align-items: center;
@@ -52,6 +137,7 @@
 	padding: 16px 20px;
 	background: var(--hover-bg-color);
 	border-bottom: 1px solid var(--input-border-color);
+	border-radius: 18px;
 }
 
 @media (max-width: 640px) {
@@ -137,9 +223,23 @@
 		box-shadow 0.18s ease;
 }
 
+.memberCard {
+	border: 1px solid
+		color-mix(in srgb, var(--input-border-color) 92%, transparent);
+	border-radius: 18px;
+	margin-bottom: 12px;
+	background: color-mix(
+		in srgb,
+		var(--card-bg) 88%,
+		var(--surface-elevated) 12%
+	);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+}
+
 .memberItem:last-child {
-	border-bottom: none;
-	border-radius: 0 0 16px 16px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--input-border-color) 92%, transparent);
+	border-radius: 18px;
 }
 
 .memberItem:hover {
@@ -383,6 +483,19 @@
 }
 
 @media (max-width: 768px) {
+	.sectionShell {
+		padding: 14px;
+	}
+
+	.hero {
+		flex-direction: column;
+	}
+
+	.toolbar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
 	.header {
 		padding: 12px 16px;
 		flex-direction: column;
@@ -393,6 +506,8 @@
 	.actions {
 		width: 100%;
 		gap: 10px;
+		flex-direction: column;
+		align-items: stretch;
 	}
 
 	.searchInput {
@@ -406,9 +521,7 @@
 	}
 
 	.inviteBtn {
-		flex: 1;
 		width: 100%;
-		justify-content: center;
 	}
 
 	.inviteForm {

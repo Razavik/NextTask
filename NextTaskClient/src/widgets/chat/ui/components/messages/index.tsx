@@ -55,6 +55,7 @@ const MessageItem: FC<{
 	const isGroupMsg = msg.chat_id != null;
 	const textRef = useRef<HTMLDivElement>(null);
 	const [stackMeta, setStackMeta] = useState(true);
+	const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
 
 	const compute = () => {
 		const el = textRef.current;
@@ -164,8 +165,14 @@ const MessageItem: FC<{
 		.filter(Boolean)
 		.join(" ");
 
+	const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsContextMenuOpen(true);
+	};
+
 	return (
-		<div className={messageClasses}>
+		<div className={messageClasses} onContextMenu={handleContextMenu}>
 			{!isOwn && (
 				<div
 					className={`${styles.messageAvatar} ${hideAvatar ? styles.avatarHidden : ""}`}
@@ -281,7 +288,12 @@ const MessageItem: FC<{
 					)}
 				</div>
 			</div>
-			<ContextMenu options={menuOptions} onSelect={handleMenuAction} />
+			<ContextMenu
+				options={menuOptions}
+				onSelect={handleMenuAction}
+				isOpen={isContextMenuOpen}
+				onOpenChange={setIsContextMenuOpen}
+			/>
 		</div>
 	);
 };

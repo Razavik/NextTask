@@ -31,3 +31,187 @@
 	color: var(--text-color-soft);
 	margin: 0;
 }
+
+.hotkeyList {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 16px;
+}
+
+.hotkeyCard {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 18px;
+	border: 1px solid var(--input-border-color);
+	border-radius: 16px;
+	background: color-mix(in srgb, var(--surface-elevated) 70%, transparent);
+}
+
+.hotkeyCardHeader {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.hotkeyIconWrap {
+	width: 36px;
+	height: 36px;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+	color: var(--primary-color);
+	flex-shrink: 0;
+}
+
+.hotkeyTitle {
+	font-weight: 600;
+	color: var(--text-color);
+	margin-bottom: 4px;
+}
+
+.hotkeyDescription {
+	color: var(--text-color-soft);
+	font-size: 0.92rem;
+	line-height: 1.45;
+}
+
+.hotkeyHint {
+	font-size: 0.88rem;
+	color: var(--text-color-muted);
+}
+
+.hotkeyHint kbd {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 8px;
+	border-radius: 8px;
+	border: 1px solid var(--input-border-color);
+	background: var(--surface-muted);
+	color: var(--text-color);
+	font-family: inherit;
+	font-weight: 600;
+	margin-left: 6px;
+}
+
+.actionsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 16px;
+}
+
+.actionCard {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 18px;
+	border-radius: 16px;
+	border: 1px solid var(--input-border-color);
+	background: linear-gradient(
+		135deg,
+		var(--surface-muted) 0%,
+		color-mix(in srgb, var(--surface-elevated) 70%, transparent) 100%
+	);
+	color: var(--text-color);
+	cursor: pointer;
+	transition:
+		transform 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.actionCard:hover {
+	transform: translateY(-2px);
+	border-color: var(--primary-color);
+	box-shadow: var(--shadow-sm);
+}
+
+.actionIconWrap {
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+	color: var(--primary-color);
+	flex-shrink: 0;
+}
+
+.actionContent {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	text-align: left;
+	flex: 1;
+}
+
+.actionTitle {
+	font-weight: 600;
+}
+
+.actionDescription {
+	font-size: 0.92rem;
+	color: var(--text-color-soft);
+}
+
+.actionArrow {
+	color: var(--text-color-soft);
+	flex-shrink: 0;
+}
+
+.utilityPanel {
+	display: flex;
+	justify-content: space-between;
+	gap: 20px;
+	padding: 18px;
+	border-radius: 16px;
+	border: 1px solid var(--input-border-color);
+	background: color-mix(in srgb, var(--surface-elevated) 72%, transparent);
+	flex-wrap: wrap;
+}
+
+.utilityInfo {
+	max-width: 520px;
+}
+
+.utilityTitle {
+	margin: 0 0 8px;
+	font-size: 1.05rem;
+	color: var(--text-color);
+}
+
+.utilityDescription {
+	margin: 0;
+	color: var(--text-color-soft);
+	line-height: 1.5;
+}
+
+.utilityActions {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.hiddenInput {
+	display: none;
+}
+
+@media (max-width: 768px) {
+	.utilityPanel {
+		flex-direction: column;
+	}
+
+	.utilityActions {
+		width: 100%;
+	}
+
+	.utilityActions > button {
+		width: 100%;
+		justify-content: center;
+	}
+}

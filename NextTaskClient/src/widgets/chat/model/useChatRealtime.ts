@@ -1,12 +1,6 @@
 import { useEffect, type MutableRefObject } from "react";
 import { chatService, type ActiveChat } from "@entities/chat";
 import type { Message } from "@shared/types/message";
-import { createMessageToast } from "@shared/model/toastStore";
-
-type ChatSocketPayload =
-	| { type?: "new_message" | "message_update"; message: Message }
-	| { type?: "message_delete"; message_id: number; chat_id?: number | null }
-	| Message;
 
 interface UseChatRealtimeOptions {
 	activeChat: ActiveChat | null;
@@ -16,10 +10,6 @@ interface UseChatRealtimeOptions {
 	shouldAcceptMessage: (message: Message) => boolean;
 	setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 	clearUnread: (contactId: string) => void;
-	incrementUnread: (contactId: string) => void;
-	addToast: (toast: ReturnType<typeof createMessageToast>) => void;
-	setActiveChat: (contactId: string) => void;
-	openWindow: () => void;
 	upsertAndTouchContact: (contact: {
 		id: string;
 		type: "personal" | "group";
@@ -38,10 +28,6 @@ export const useChatRealtime = ({
 	shouldAcceptMessage,
 	setMessages,
 	clearUnread,
-	incrementUnread,
-	addToast,
-	setActiveChat,
-	openWindow,
 	upsertAndTouchContact,
 }: UseChatRealtimeOptions) => {
 	useEffect(() => {
@@ -53,11 +39,11 @@ export const useChatRealtime = ({
 			chatService.connectToGroup(activeChat.chatId, token);
 		}
 
-		const handleNewMessage = (payload: ChatSocketPayload) => {
+		const handleNewMessage = (payload: unknown) => {
 			try {
 				const eventType =
 					typeof payload === "object" && payload && "type" in payload
-						? payload.type
+						? (payload as { type?: string }).type
 						: "new_message";
 
 				if (eventType === "message_delete") {
@@ -73,11 +59,10 @@ export const useChatRealtime = ({
 					typeof payload === "object" &&
 					payload &&
 					"message" in payload
-						? payload.message
+						? (payload as { message: Message }).message
 						: (payload as Message);
 
 				const currentActiveChat = activeChatRef.current;
-				const currentIsOpen = isOpenRef.current;
 
 				const belongsToActive = (() => {
 					if (!currentActiveChat) return false;
@@ -102,6 +87,37 @@ export const useChatRealtime = ({
 					);
 				})();
 
+				if (msg.sender_id === currentUserId && !belongsToActive) {
+					try {
+						if (msg.chat_id != null) {
+							upsertAndTouchContact({
+								id: `chat-${msg.chat_id}`,
+								type: "group",
+								chatId: msg.chat_id,
+								name:
+									activeChatRef.current?.name ||
+									`Групповой чат #${msg.chat_id}`,
+								avatar: undefined,
+							});
+						} else {
+							const otherId = msg.receiver_id;
+							if (otherId) {
+								upsertAndTouchContact({
+									id: `user-${otherId}`,
+									type: "personal",
+									userId: otherId,
+									name:
+										msg.receiver?.name ||
+										msg.receiver?.email ||
+										`Пользователь #${otherId}`,
+									avatar: msg.receiver?.avatar,
+								});
+							}
+						}
+					} catch {}
+					return;
+				}
+
 				if (eventType === "message_update") {
 					if (belongsToActive) {
 						setMessages((prev) =>
@@ -125,44 +141,7 @@ export const useChatRealtime = ({
 								}`;
 					clearUnread(contactId);
 				} else if (!belongsToActive && shouldAcceptMessage(msg)) {
-					let contactId = "";
-					let senderName = "";
-					let senderAvatar: string | undefined;
-					let messageText = "";
-
-					if (msg.chat_id != null) {
-						contactId = `chat-${msg.chat_id}`;
-						senderName =
-							msg.sender?.name ||
-							msg.sender?.email ||
-							"Пользователь";
-						senderAvatar = msg.sender?.avatar;
-						messageText = msg.content;
-					} else {
-						const senderId = msg.sender_id;
-						contactId = `user-${senderId}`;
-						senderName =
-							msg.sender?.name ||
-							msg.sender?.email ||
-							"Пользователь";
-						senderAvatar = msg.sender?.avatar;
-						messageText = msg.content;
-					}
-
-					incrementUnread(contactId);
-					addToast(
-						createMessageToast(
-							senderName,
-							messageText.length > 50
-								? messageText.substring(0, 50) + "..."
-								: messageText,
-							senderAvatar,
-							() => {
-								setActiveChat(contactId);
-								if (!currentIsOpen) openWindow();
-							},
-						),
-					);
+					// Уведомления и unread для неактивных чатов обрабатываются глобально в useChatNotifications
 				}
 
 				try {
@@ -214,13 +193,9 @@ export const useChatRealtime = ({
 	}, [
 		activeChat,
 		activeChatRef,
-		addToast,
 		clearUnread,
 		currentUserId,
-		incrementUnread,
 		isOpenRef,
-		openWindow,
-		setActiveChat,
 		setMessages,
 		shouldAcceptMessage,
 		upsertAndTouchContact,

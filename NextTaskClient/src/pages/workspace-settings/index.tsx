@@ -120,9 +120,7 @@ const WorkspaceSettings: FC = () => {
 						</div>
 					</div>
 
-					<section
-						className={`${styles.section}`}
-					>
+					<section className={`${styles.section}`}>
 						<div
 							className={`${styles.block} ${glass.glassSoft}`}
 							ref={generalRef}

@@ -6,4 +6,7 @@ export type {
 	ProfileData,
 	ProfileUpdateRequest,
 	PasswordChangeRequest,
+	UserSettings,
+	NotificationSettings,
+	HotkeySettings,
 } from "./model/profile.service";

@@ -15,8 +15,29 @@ from app.schemas.invite import (
     AcceptInviteRequest, DeclineInviteRequest, EmailInviteRequest, InviteLinkRequest
 )
 from app.core.security import get_current_active_user
+from app.api.v1.chat import manager
 
 router = APIRouter()
+
+
+def _notify_workspace_invite_status_changed(owner_id: int, workspace_id: int, workspace_name: str, invite_id: int, email: str, status_value: str):
+    payload = {
+        "type": "workspace_invite_status_changed",
+        "invite": {
+            "id": invite_id,
+            "email": email,
+            "workspace": {
+                "id": workspace_id,
+                "name": workspace_name,
+            },
+            "status": status_value,
+        },
+    }
+    try:
+        import asyncio
+        asyncio.run(manager.send_personal_message(payload, owner_id))
+    except Exception:
+        pass
 
 def generate_invite_token() -> str:
     """Генерирует уникальный токен приглашения"""
@@ -140,9 +161,54 @@ def accept_invite(
         Invite.token == token,
         Invite.status == "pending"
     ).first()
-    
+
+    email_invite = None
     if not invite:
-        raise HTTPException(status_code=404, detail="Invite not found or expired")
+        email_invite = db.query(EmailInvite).filter(
+            EmailInvite.token == token,
+            EmailInvite.status == "pending"
+        ).first()
+        if not email_invite:
+            raise HTTPException(status_code=404, detail="Invite not found or expired")
+        if email_invite.email != current_user.email:
+            raise HTTPException(status_code=403, detail="This invite is not for you")
+
+        if email_invite.expires_at < datetime.utcnow():
+            email_invite.status = "expired"
+            db.commit()
+            raise HTTPException(status_code=400, detail="Invite has expired")
+
+        existing_membership = db.query(WorkspaceMember).filter(
+            WorkspaceMember.workspace_id == email_invite.workspace_id,
+            WorkspaceMember.user_id == current_user.id
+        ).first()
+
+        if existing_membership:
+            raise HTTPException(status_code=400, detail="User is already a member of this workspace")
+
+        member = WorkspaceMember(
+            workspace_id=email_invite.workspace_id,
+            user_id=current_user.id,
+            role=email_invite.role
+        )
+
+        db.add(member)
+        email_invite.status = "accepted"
+        email_invite.accepted_at = datetime.utcnow()
+        db.commit()
+
+        workspace = db.query(Workspace).filter(Workspace.id == email_invite.workspace_id).first()
+        if workspace:
+            _notify_workspace_invite_status_changed(
+                workspace.owner_id,
+                workspace.id,
+                workspace.name,
+                email_invite.id,
+                email_invite.email,
+                email_invite.status,
+            )
+
+        return {"workspace_id": email_invite.workspace_id}
     
     if invite.expires_at < datetime.utcnow():
         invite.status = "expired"
@@ -231,14 +297,24 @@ def get_my_invites(
     result = []
     for email_invite in email_invites:
         workspace = db.query(Workspace).filter(Workspace.id == email_invite.workspace_id).first()
-        # Здесь нужно получить информацию о приглашающем (можно добавить поле в EmailInvite)
-        
+        if not workspace:
+            continue
+
+        owner = db.query(User).filter(User.id == workspace.owner_id).first()
+
         result.append(IncomingInvite(
             id=email_invite.id,
-            workspace_name=workspace.name,
-            inviter_name="Workspace Owner",  # временно
-            role=email_invite.role,
-            created_at=email_invite.created_at
+            token=email_invite.token,
+            workspace=WorkspaceRef(
+                id=workspace.id,
+                name=workspace.name,
+            ),
+            inviter=UserRef(
+                name=(owner.name if owner and owner.name else (owner.email if owner else "Владелец пространства")),
+                email=(owner.email if owner else ""),
+            ),
+            expires_at=email_invite.expires_at,
+            status=email_invite.status,
         ))
     
     return IncomingInvitesResponse(invites=result)
@@ -260,8 +336,62 @@ def decline_invite(
     
     email_invite.status = "declined"
     db.commit()
+
+    workspace = db.query(Workspace).filter(Workspace.id == email_invite.workspace_id).first()
+    if workspace:
+        _notify_workspace_invite_status_changed(
+            workspace.owner_id,
+            workspace.id,
+            workspace.name,
+            email_invite.id,
+            email_invite.email,
+            email_invite.status,
+        )
     
     return {"message": "Invite declined successfully"}
+
+@router.delete("/email-invites/{invite_id}")
+def revoke_email_invite(
+    invite_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Отозвать email-приглашение"""
+    email_invite = db.query(EmailInvite).filter(EmailInvite.id == invite_id).first()
+    if not email_invite:
+        raise HTTPException(status_code=404, detail="Invite not found")
+
+    workspace = db.query(Workspace).filter(Workspace.id == email_invite.workspace_id).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    if workspace.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Only owner can revoke email invites")
+
+    invited_user = db.query(User).filter(User.email == email_invite.email).first()
+    email_invite.status = "revoked"
+    db.commit()
+
+    if invited_user:
+        payload = {
+            "type": "workspace_invite_revoked",
+            "invite": {
+                "id": email_invite.id,
+                "token": email_invite.token,
+                "workspace": {
+                    "id": workspace.id,
+                    "name": workspace.name,
+                },
+                "status": email_invite.status,
+            },
+        }
+        try:
+            import asyncio
+            asyncio.run(manager.send_personal_message(payload, invited_user.id))
+        except Exception:
+            pass
+
+    return {"message": "Email invite revoked successfully"}
 
 @router.get("/workspaces/{workspace_id}/email-invites", response_model=EmailInvitesResponse)
 def get_workspace_email_invites(

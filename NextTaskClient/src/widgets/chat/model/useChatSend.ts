@@ -90,22 +90,17 @@ export const useChatSend = ({
 
 				if (activeChat.type === "group" && activeChat.chatId) {
 					const content = newMessage.trim();
-					// Если есть вложения, используем REST (TODO: обновить)
-					if (attachments.length > 0) {
-						chatService.sendGroupMessage(
-							JSON.stringify({
-								content,
-								attachments,
-								reply_to_id,
-							}),
-							activeChat.chatId,
-						);
-					} else {
-						chatService.sendGroupMessage(
-							JSON.stringify({ content, reply_to_id }),
-							activeChat.chatId,
-						);
-					}
+					chatService.sendGroupMessage(
+						{
+							content,
+							attachments:
+								attachments.length > 0
+									? attachments
+									: undefined,
+							reply_to_id,
+						},
+						activeChat.chatId,
+					);
 
 					// Оптимистичное добавление
 					if (currentUser) {

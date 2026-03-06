@@ -33,13 +33,10 @@ const Sidebar: FC<SidebarProps> = ({
 	const filtered = contacts.filter((c) => {
 		// Фильтр по workspace (только если фильтры не скрыты)
 		if (!hideFilters && scope === "current" && currentWorkspaceId) {
-			// Показываем только личные сообщения и групповые чаты текущего workspace
 			if (c.type === "group") {
-				return c.workspaceId === currentWorkspaceId;
-			} else {
-				// Для личных чатов проверяем, есть ли у пользователя workspace
-				return c.workspaceId === currentWorkspaceId;
+				return false;
 			}
+			return c.workspaceId === currentWorkspaceId;
 		}
 		// При scope="all" или скрытых фильтрах показываем все чаты (без фильтрации по workspace)
 

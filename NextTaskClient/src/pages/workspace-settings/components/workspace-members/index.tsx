@@ -64,33 +64,70 @@ const WorkspaceMembers: FC<WorkspaceMembersProps> = ({
 	} = useWorkspaceMembers(workspaceId);
 
 	const trimmedQuery = searchQuery.trim();
+	const ownerCount = members.filter(
+		(member) => member.role === "owner",
+	).length;
 
 	return (
 		<>
-			<div className={styles.header}>
-				<div className={styles.titleSection}>
-					<Users size={20} />
-					<h3 className={styles.title}>
-						Участники ({members.length})
-					</h3>
+			<div className={styles.sectionShell}>
+				<div className={styles.hero}>
+					<div className={styles.titleSection}>
+						<div className={styles.titleIcon}>
+							<Users size={20} />
+						</div>
+						<div>
+							<h3 className={styles.title}>
+								Команда пространства
+							</h3>
+							<p className={styles.subtitle}>
+								Управляйте доступом участников и приглашениями в
+								одном месте.
+							</p>
+						</div>
+					</div>
+					<div className={styles.heroStats}>
+						<div className={styles.statCard}>
+							<span className={styles.statValue}>
+								{members.length}
+							</span>
+							<span className={styles.statLabel}>Участников</span>
+						</div>
+						<div className={styles.statCard}>
+							<span className={styles.statValue}>
+								{ownerCount}
+							</span>
+							<span className={styles.statLabel}>Владельцев</span>
+						</div>
+					</div>
 				</div>
-				<div className={styles.actions}>
+
+				<div className={styles.toolbar}>
 					<Input
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						placeholder="Поиск по нику"
+						placeholder="Поиск по имени или email"
 						className={styles.searchInput}
 						leadingIcon={<Search size={16} aria-hidden />}
 					/>
-					{isOwner && (
-						<Button
-							onClick={() => setShowInviteForm(!showInviteForm)}
-							className={styles.inviteBtn}
-						>
-							<UserPlus size={16} />
-							Пригласить
-						</Button>
-					)}
+					<div className={styles.actions}>
+						<span className={styles.toolbarHint}>
+							{trimmedQuery
+								? `Найдено: ${filteredMembers.length}`
+								: "Меняйте роли и управляйте доступом из списка ниже"}
+						</span>
+						{isOwner && (
+							<Button
+								onClick={() =>
+									setShowInviteForm(!showInviteForm)
+								}
+								className={styles.inviteBtn}
+							>
+								<UserPlus size={16} />
+								{showInviteForm ? "Скрыть форму" : "Пригласить"}
+							</Button>
+						)}
+					</div>
 				</div>
 			</div>
 
@@ -153,7 +190,10 @@ const WorkspaceMembers: FC<WorkspaceMembersProps> = ({
 					</div>
 				) : (
 					filteredMembers.map((member) => (
-						<div key={member.id} className={styles.memberItem}>
+						<div
+							key={member.id}
+							className={`${styles.memberItem} ${styles.memberCard}`}
+						>
 							<div className={styles.memberInfo}>
 								<div className={styles.memberAvatar}>
 									{member.avatar ? (

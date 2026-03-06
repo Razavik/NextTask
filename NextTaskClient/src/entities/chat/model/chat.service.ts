@@ -3,10 +3,17 @@ import api from "@shared/api/axios";
 import type { Message, MessageCreate } from "@shared/types/message";
 import type { ChatContact } from "./chatStore";
 
+type GroupMessagePayload = {
+	content: string;
+	attachments?: string[];
+	reply_to_id?: number | null;
+	[type: string]: unknown;
+};
+
 class ChatService {
 	private wsPersonal: WebSocket | null = null;
 	private wsGroup: WebSocket | null = null;
-	private messageHandlers: Set<(message: Message) => void> = new Set();
+	private messageHandlers: Set<(message: unknown) => void> = new Set();
 	private reconnectPersonalTimeout: NodeJS.Timeout | null = null;
 	private reconnectGroupTimeout: NodeJS.Timeout | null = null;
 	private reconnectPersonalAttempts = 0;
@@ -14,7 +21,7 @@ class ChatService {
 	private maxReconnectAttempts = 5;
 	private currentGroupId: number | null = null;
 	private lastToken: string | null = null;
-	private groupSendQueue: string[] = [];
+	private groupSendQueue: GroupMessagePayload[] = [];
 
 	/**
 	 * Отправить личное сообщение (REST)
@@ -164,9 +171,9 @@ class ChatService {
 			// отправляем накопленные сообщения
 			const queued = [...this.groupSendQueue];
 			this.groupSendQueue.length = 0;
-			for (const content of queued) {
+			for (const payload of queued) {
 				try {
-					socket.send(JSON.stringify({ content }));
+					socket.send(JSON.stringify(payload));
 				} catch {}
 			}
 		};
@@ -228,12 +235,11 @@ class ChatService {
 	/**
 	 * Отправить сообщение в групповой чат
 	 */
-	sendGroupMessage(content: string, chatId?: number) {
+	sendGroupMessage(payload: GroupMessagePayload, chatId?: number) {
 		const targetId = chatId ?? this.currentGroupId ?? null;
 		if (!targetId) {
 			throw new Error("chatId is not defined for group message");
 		}
-		const payload = { content };
 
 		if (
 			this.wsGroup &&
@@ -256,7 +262,7 @@ class ChatService {
 		}
 
 		this.currentGroupId = targetId;
-		this.groupSendQueue.push(content);
+		this.groupSendQueue.push(payload);
 		if (this.lastToken) {
 			this.connectToGroup(targetId, this.lastToken);
 		}
@@ -265,7 +271,7 @@ class ChatService {
 	/**
 	 * Подписаться на новые сообщения
 	 */
-	onMessage(handler: (message: Message) => void) {
+	onMessage(handler: (message: unknown) => void) {
 		this.messageHandlers.add(handler);
 
 		// Возвращаем функцию отписки

@@ -23,7 +23,6 @@ const ChatContainer: FC = () => {
 	const { token: authToken, user: currentUser } = useAuthStore();
 	const addToast = useToastStore((state) => state.addToast);
 
-	// Флаги среды (нельзя условно вызывать hooks, поэтому просто флаги)
 	const isAuthPage =
 		/\/login/i.test(window.location.pathname) ||
 		/\/register/i.test(window.location.pathname);

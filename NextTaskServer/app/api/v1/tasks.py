@@ -6,6 +6,7 @@ import os
 import base64
 import mimetypes
 import time
+import asyncio
 
 from app.database.database import get_db
 from app.models.user import User
@@ -16,6 +17,7 @@ from app.schemas.task import (
     TaskAssigneeOut, AuthorOut
 )
 from app.core.security import get_current_active_user
+from app.api.v1.chat import manager, _avatar_to_base64 as _chat_avatar_to_base64
 
 router = APIRouter()
 workspace_router = APIRouter()
@@ -80,6 +82,29 @@ def to_task_response(task: Task) -> TaskResponse:
         workspace_id=task.workspace_id,
         author=author,
     )
+
+def notify_new_assignees(task: Task, current_user: User, new_assignees: List[User]):
+    for assignee in new_assignees:
+        if assignee.id == current_user.id:
+            continue
+        payload = {
+            "type": "task_assigned",
+            "task": {
+                "id": task.id,
+                "title": task.title,
+                "workspace_id": task.workspace_id,
+            },
+            "assigned_by": {
+                "id": current_user.id,
+                "name": current_user.name,
+                "email": current_user.email,
+                "avatar": _chat_avatar_to_base64(current_user.avatar),
+            },
+        }
+        try:
+            asyncio.run(manager.send_personal_message(payload, assignee.id))
+        except Exception:
+            pass
 
 def check_workspace_access(workspace_id: int, user: User, db: Session) -> Workspace:
     """Проверяет доступ пользователя к рабочему пространству"""
@@ -163,13 +188,18 @@ def create_task(
     db.refresh(task)
     
     # Проставляем исполнителей, если переданы
+    new_assignees: List[User] = []
     if task_data.assignees_ids:
         task.assignees.clear()
         users = db.query(User).filter(User.id.in_(task_data.assignees_ids)).all()
         for u in users:
             task.assignees.append(u)
+        new_assignees = users
         db.commit()
         db.refresh(task)
+
+    if new_assignees:
+        notify_new_assignees(task, current_user, new_assignees)
 
     return to_task_response(task)
 
@@ -201,14 +231,19 @@ def update_task(
         task.completed_at = None
     
     # Обновим исполнителей, если поле передано явно
+    new_assignees: List[User] = []
     if task_data.assignees_ids is not None:
+        previous_assignee_ids = {u.id for u in (task.assignees or [])}
         task.assignees.clear()
         if task_data.assignees_ids:
             users = db.query(User).filter(User.id.in_(task_data.assignees_ids)).all()
             for u in users:
                 task.assignees.append(u)
+            new_assignees = [u for u in users if u.id not in previous_assignee_ids]
     db.commit()
     db.refresh(task)
+    if new_assignees:
+        notify_new_assignees(task, current_user, new_assignees)
     return to_task_response(task)
 
 @router.delete("/{task_id}")
@@ -271,16 +306,21 @@ def set_task_assignees(
         raise HTTPException(status_code=404, detail="Task not found")
     
     check_workspace_access(task.workspace_id, current_user, db)
+    previous_assignee_ids = {u.id for u in (task.assignees or [])}
     
     # Очищаем текущих исполнителей
     task.assignees.clear()
     
     # Добавляем новых
+    new_assignees: List[User] = []
     if assignees_data.assignees_ids:
         users = db.query(User).filter(User.id.in_(assignees_data.assignees_ids)).all()
         for user in users:
             task.assignees.append(user)
+        new_assignees = [user for user in users if user.id not in previous_assignee_ids]
     
     db.commit()
     db.refresh(task)
+    if new_assignees:
+        notify_new_assignees(task, current_user, new_assignees)
     return to_task_response(task)

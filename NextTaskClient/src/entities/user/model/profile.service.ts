@@ -1,5 +1,23 @@
 import api from "@shared/api/axios";
 
+export interface NotificationSettings {
+	emailNotifications: boolean;
+	pushNotifications: boolean;
+}
+
+export interface HotkeySettings {
+	openSettings: string;
+	openProfile: string;
+	openPlanning: string;
+	openChat: string;
+}
+
+export interface UserSettings {
+	theme?: "light" | "dark";
+	notifications: NotificationSettings;
+	hotkeys: HotkeySettings;
+}
+
 export interface ProfileData {
 	id: number;
 	email: string;
@@ -7,11 +25,13 @@ export interface ProfileData {
 	position?: string;
 	avatar?: string;
 	created_at?: string;
+	settings?: UserSettings;
 }
 
 export interface ProfileUpdateRequest {
 	name?: string;
 	position?: string;
+	settings?: UserSettings;
 }
 
 export interface PasswordChangeRequest {
@@ -29,6 +49,13 @@ class ProfileService {
 		profileData: ProfileUpdateRequest,
 	): Promise<ProfileData> {
 		const { data } = await api.put<ProfileData>("/profile/me", profileData);
+		return data;
+	}
+
+	async updateSettings(settings: UserSettings): Promise<ProfileData> {
+		const { data } = await api.put<ProfileData>("/profile/me", {
+			settings,
+		});
 		return data;
 	}
 

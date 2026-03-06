@@ -251,7 +251,6 @@
 	background: var(--surface-elevated);
 	border-radius: 12px;
 	border: 1px solid var(--border-subtle);
-	margin-bottom: 20px;
 }
 
 .mobileTabs * {

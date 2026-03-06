@@ -5,10 +5,12 @@ import Button from "@shared/ui/button";
 import Input from "@shared/ui/input";
 import {
 	createWorkspaceInvite,
+	getWorkspaceEmailInvites,
 	getWorkspaceInvites,
+	revokeEmailInvite,
 	revokeInvite,
 } from "@features/invites";
-import type { InviteLinkItem } from "@shared/types/invite";
+import type { EmailInvite, InviteLinkItem } from "@shared/types/invite";
 import styles from "./index.module.css";
 import Loader from "@shared/ui/loader";
 
@@ -28,6 +30,17 @@ const InviteSettings: FC<InviteSettingsProps> = ({ workspaceId }) => {
 		enabled: !!workspaceId,
 	});
 
+	const { data: emailInvites = [], isLoading: isEmailInvitesLoading } =
+		useQuery<EmailInvite[]>({
+			queryKey: ["workspaceEmailInvites", workspaceId],
+			queryFn: () => getWorkspaceEmailInvites(workspaceId),
+			enabled: !!workspaceId,
+		});
+
+	const pendingEmailInvites = emailInvites.filter(
+		(invite) => invite.status === "pending",
+	);
+
 	const createInviteMutation = useMutation({
 		mutationFn: () => createWorkspaceInvite(workspaceId),
 		onSuccess: () =>
@@ -41,6 +54,14 @@ const InviteSettings: FC<InviteSettingsProps> = ({ workspaceId }) => {
 		onSuccess: () =>
 			queryClient.invalidateQueries({
 				queryKey: ["workspaceInvites", workspaceId],
+			}),
+	});
+
+	const revokeEmailInviteMutation = useMutation({
+		mutationFn: (inviteId: number) => revokeEmailInvite(inviteId),
+		onSuccess: () =>
+			queryClient.invalidateQueries({
+				queryKey: ["workspaceEmailInvites", workspaceId],
 			}),
 	});
 
@@ -61,6 +82,71 @@ const InviteSettings: FC<InviteSettingsProps> = ({ workspaceId }) => {
 				>
 					<RefreshCw size={16} /> Добавить ссылку
 				</Button>
+			</div>
+
+			<div className={styles.pendingSection}>
+				<div className={styles.pendingHeader}>
+					<div>
+						<h3 className={styles.sectionTitle}>
+							Ожидают приглашение
+						</h3>
+						<p className={styles.sectionDescription}>
+							Люди, которым отправлено приглашение, но они ещё не
+							приняли его.
+						</p>
+					</div>
+					<div className={styles.pendingCount}>
+						{pendingEmailInvites.length}
+					</div>
+				</div>
+
+				{isEmailInvitesLoading ? (
+					<div className={styles.loaderBox}>
+						<Loader />
+					</div>
+				) : pendingEmailInvites.length === 0 ? (
+					<div className={styles.emptyCompact}>
+						<Users size={20} />
+						<span>Нет ожидающих приглашения пользователей</span>
+					</div>
+				) : (
+					<div className={styles.pendingList}>
+						{pendingEmailInvites.map((invite) => (
+							<div key={invite.id} className={styles.pendingItem}>
+								<div className={styles.pendingMain}>
+									<div className={styles.pendingEmail}>
+										{invite.email}
+									</div>
+									<div className={styles.pendingMeta}>
+										Приглашён{" "}
+										{new Date(
+											invite.created_at,
+										).toLocaleDateString()}
+									</div>
+								</div>
+								<div className={styles.pendingActions}>
+									<div className={styles.pendingStatus}>
+										Ожидает
+									</div>
+									<Button
+										onClick={() =>
+											revokeEmailInviteMutation.mutate(
+												invite.id,
+											)
+										}
+										className={styles.pendingDeleteBtn}
+										disabled={
+											revokeEmailInviteMutation.isPending
+										}
+										title="Удалить приглашение"
+									>
+										<Trash2 size={14} />
+									</Button>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
 			</div>
 
 			{isInvitesLoading ? (

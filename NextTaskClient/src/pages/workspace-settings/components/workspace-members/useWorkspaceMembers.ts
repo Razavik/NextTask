@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@entities/user";
 import {
 	useToastStore,
@@ -21,6 +22,7 @@ type ConfirmTarget =
 export const useWorkspaceMembers = (workspaceId: number) => {
 	const currentUser = useAuthStore((state) => state.user);
 	const addToast = useToastStore((state) => state.addToast);
+	const queryClient = useQueryClient();
 	const { data: members = [], isLoading } =
 		useWorkspaceMembersQuery(workspaceId);
 	const invalidateMembers = useInvalidateWorkspaceMembers(workspaceId);
@@ -58,16 +60,20 @@ export const useWorkspaceMembers = (workspaceId: number) => {
 			addToast(
 				createSuccessToast(
 					"Приглашение отправлено",
-					`Письмо отправлено на ${inviteEmail.trim()}`,
+					`Пользователь ${inviteEmail.trim()} приглашён в пространство`,
 				),
 			);
+			await queryClient.invalidateQueries({
+				queryKey: ["workspaceEmailInvites", workspaceId],
+			});
 			setInviteEmail("");
 			setShowInviteForm(false);
 		} catch (err) {
 			const message =
-				err instanceof Error
+				(err as any)?.response?.data?.detail ||
+				(err instanceof Error
 					? err.message
-					: "Не удалось отправить приглашение";
+					: "Не удалось отправить приглашение");
 			addToast(createErrorToast("Ошибка приглашения", message));
 		} finally {
 			setIsInviting(false);

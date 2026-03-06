@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { getMyInvites, acceptInvite, declineInvite } from "@features/invites";
 import type { IncomingInvite } from "@shared/types/invite";
 import Button from "@shared/ui/button";
@@ -10,6 +11,7 @@ import styles from "./index.module.css";
 
 const ProfileInvites: FC = () => {
 	const toast = useToast();
+	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
 	const { data: invites = [], isLoading } = useQuery<IncomingInvite[]>({
@@ -19,15 +21,14 @@ const ProfileInvites: FC = () => {
 
 	const acceptMutation = useMutation({
 		mutationFn: (token: string) => acceptInvite(token),
-		onSuccess: () => {
+		onSuccess: (result) => {
 			toast.success(
 				"Приглашение принято",
 				"Открываю рабочее пространство",
 			);
 			queryClient.invalidateQueries({ queryKey: ["myInvites"] });
 			queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-			// редирект предпочтительно делать на уровне родителя/страницы; здесь оставим только тост и инвалидацию
-			// навигацию можно делегировать через callback проп, если понадобится
+			navigate(`/workspaces/workspace/${result.workspace_id}`);
 		},
 		onError: (err: any) => {
 			const msg =

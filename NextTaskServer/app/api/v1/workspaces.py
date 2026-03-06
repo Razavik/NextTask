@@ -4,11 +4,15 @@ from typing import List, Optional
 import os
 import base64
 import mimetypes
+from datetime import datetime, timedelta
+import secrets
 
 from app.database.database import get_db
 from app.models.user import User
 from app.models.workspace import Workspace, WorkspaceMember
 from app.models.task import Task
+from app.models.invite import EmailInvite
+from app.api.v1.chat import manager, _avatar_to_base64 as _chat_avatar_to_base64
 from app.schemas.workspace import (
     WorkspaceCreate, WorkspaceUpdate, WorkspaceResponse, WorkspacesResponse,
     WorkspaceMember as WorkspaceMemberSchema, WorkspaceUsersResponse,
@@ -225,9 +229,70 @@ def invite_user(
     # Только владелец может приглашать пользователей
     if workspace.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only owner can invite users")
-    
-    # Здесь должна быть логика отправки email-приглашения
-    # Пока просто возвращаем успешный ответ
+
+    email = invite_data.email.strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    if email == current_user.email.lower():
+        raise HTTPException(status_code=400, detail="Нельзя пригласить самого себя")
+
+    invited_user = db.query(User).filter(User.email == email).first()
+    if not invited_user:
+        raise HTTPException(status_code=404, detail="Пользователь с таким email не найден")
+
+    existing_member = db.query(User).join(WorkspaceMember, WorkspaceMember.user_id == User.id).filter(
+        WorkspaceMember.workspace_id == workspace_id,
+        User.email == email
+    ).first()
+    if existing_member:
+        raise HTTPException(status_code=400, detail="Пользователь уже состоит в этом пространстве")
+
+    existing_pending_invite = db.query(EmailInvite).filter(
+        EmailInvite.workspace_id == workspace_id,
+        EmailInvite.email == email,
+        EmailInvite.status == "pending"
+    ).first()
+    if existing_pending_invite:
+        raise HTTPException(status_code=400, detail="Приглашение этому пользователю уже отправлено")
+
+    email_invite = EmailInvite(
+        workspace_id=workspace_id,
+        email=email,
+        role=invite_data.role or "reader",
+        status="pending",
+        token=secrets.token_urlsafe(32),
+        expires_at=datetime.utcnow() + timedelta(days=7),
+        sent_at=datetime.utcnow(),
+    )
+
+    db.add(email_invite)
+    db.commit()
+
+    payload = {
+        "type": "workspace_invited",
+        "invite": {
+            "id": email_invite.id,
+            "token": email_invite.token,
+            "workspace": {
+                "id": workspace.id,
+                "name": workspace.name,
+            },
+            "inviter": {
+                "name": current_user.name or current_user.email,
+                "email": current_user.email,
+                "avatar": _chat_avatar_to_base64(current_user.avatar),
+            },
+            "expires_at": email_invite.expires_at.isoformat() if email_invite.expires_at else None,
+            "status": email_invite.status,
+        },
+    }
+    try:
+        import asyncio
+        asyncio.run(manager.send_personal_message(payload, invited_user.id))
+    except Exception:
+        pass
+
     return {"message": "Email invitation sent successfully"}
 
 @router.patch("/{workspace_id}/members/{user_id}/role")
@@ -291,8 +356,23 @@ def remove_user(
     # Нельзя удалить владельца
     if membership.role == "owner":
         raise HTTPException(status_code=403, detail="Cannot remove owner")
+
+    removed_user_id = membership.user_id
     
     db.delete(membership)
     db.commit()
+
+    payload = {
+        "type": "workspace_member_removed",
+        "workspace": {
+            "id": workspace.id,
+            "name": workspace.name,
+        },
+    }
+    try:
+        import asyncio
+        asyncio.run(manager.send_personal_message(payload, removed_user_id))
+    except Exception:
+        pass
     
     return {"message": "User removed from workspace successfully"}
