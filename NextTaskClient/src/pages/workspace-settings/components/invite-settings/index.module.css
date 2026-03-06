@@ -3,7 +3,14 @@
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	padding: 16px;
+	padding: 12px;
+}
+
+.inviteHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
 }
 
 .sectionTitle {
@@ -23,9 +30,10 @@
 	background: var(--primary-color) !important;
 	color: white !important;
 	border: 1px solid var(--primary-color) !important;
-	font-weight: 500;
+	font-weight: 600;
 	transition: all 0.2s;
 	align-self: flex-start;
+	padding-inline: 14px !important;
 }
 
 .addInviteBtn:hover:not(:disabled) {
@@ -42,41 +50,71 @@
 	box-shadow: none !important;
 }
 
-.inviteList {
-	margin: 0;
-	padding: 0;
-	list-style: none;
+.inviteGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 12px;
+}
+
+.inviteCard {
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-}
-
-.inviteItem {
-	display: flex;
-	align-items: center;
 	gap: 12px;
-	padding: 16px 0;
-	border-bottom: 1px solid var(--input-border-color);
-	transition: opacity 0.2s;
+	padding: 14px;
+	border-radius: 16px;
+	border: 1px solid var(--input-border-color);
+	background: color-mix(in srgb, var(--card-bg) 96%, white);
+	box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
 }
 
-.inviteItem:last-child {
-	border-bottom: none;
+.inviteCardHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
 }
 
-.inviteItem:hover {
-	opacity: 0.8;
+.inviteBadge {
+	padding: 6px 10px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+	color: var(--primary-color);
+	font-weight: 700;
+	font-size: 0.8rem;
+}
+
+.inviteMetaRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+.inviteMetaItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--text-color-soft);
+	font-size: 0.9rem;
+}
+
+.inviteBody {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 }
 
 .inviteLinkInput {
-	flex: 2;
+	flex: 1;
 	font-family: monospace;
 	font-size: 0.95rem;
-	background: transparent;
-	border: none;
+	background: var(--input-bg-color);
+	border: 1px solid var(--input-border-color);
 	color: var(--text-color);
 	border-radius: var(--radius);
-	transition: background-color 0.2s;
+	transition:
+		background-color 0.2s,
+		border-color 0.2s;
 }
 
 .inviteLinkInput:focus {
@@ -88,12 +126,9 @@
 	background: var(--hover-bg-color);
 }
 
-.inviteMeta {
-	color: var(--text-color-soft);
-	font-size: 0.92rem;
-	margin: 0 8px 0 0;
-	white-space: nowrap;
-	flex-shrink: 0;
+.inviteActions {
+	display: flex;
+	gap: 10px;
 }
 
 .copyBtn,
@@ -127,6 +162,26 @@
 	border-color: var(--danger-hover, #d32f2f) !important;
 	transform: translateY(-1px);
 	box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
+.loaderBox {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+}
+
+.empty {
+	display: grid;
+	place-items: center;
+	gap: 8px;
+	padding: 20px;
+	color: var(--text-color-soft);
+	text-align: center;
+}
+
+.empty :where(svg) {
+	color: var(--text-color-soft);
 }
 
 .copyBtn:disabled,

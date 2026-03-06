@@ -6,3 +6,88 @@
 	position: relative;
 	z-index: 1; /* выше фонового слоя */
 }
+
+.glassStrong {
+	background:
+		linear-gradient(
+			120deg,
+			rgba(255, 255, 255, 0.24) 0%,
+			rgba(255, 255, 255, 0.08) 24%,
+			rgba(255, 255, 255, 0.02) 42%,
+			transparent 58%
+		),
+		linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.16) 0%,
+			color-mix(in srgb, var(--card-bg) 78%, transparent) 100%
+		) !important;
+	border: 1px solid var(--border-muted);
+}
+
+.glassPanel {
+	background:
+		linear-gradient(
+			120deg,
+			rgba(255, 255, 255, 0.24) 0%,
+			rgba(255, 255, 255, 0.08) 24%,
+			rgba(255, 255, 255, 0.02) 42%,
+			transparent 58%
+		),
+		linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.16) 0%,
+			color-mix(in srgb, var(--card-bg) 78%, transparent) 100%
+		) !important;
+	border: 1px solid var(--border-muted);
+}
+
+.glassCard {
+	background:
+		linear-gradient(
+			120deg,
+			rgba(255, 255, 255, 0.24) 0%,
+			rgba(255, 255, 255, 0.08) 24%,
+			rgba(255, 255, 255, 0.02) 42%,
+			transparent 58%
+		),
+		linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.16) 0%,
+			color-mix(in srgb, var(--card-bg) 78%, transparent) 100%
+		) !important;
+	border: 1px solid var(--border-muted);
+}
+
+.glassSoft {
+	background:
+		linear-gradient(
+			120deg,
+			rgba(255, 255, 255, 0.24) 0%,
+			rgba(255, 255, 255, 0.08) 24%,
+			rgba(255, 255, 255, 0.02) 42%,
+			transparent 58%
+		),
+		linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.16) 0%,
+			color-mix(in srgb, var(--card-bg) 78%, transparent) 100%
+		) !important;
+	border: 1px solid var(--border-muted);
+}
+
+.glassItem {
+	background:
+		linear-gradient(
+			120deg,
+			rgba(255, 255, 255, 0.24) 0%,
+			rgba(255, 255, 255, 0.08) 24%,
+			rgba(255, 255, 255, 0.02) 42%,
+			transparent 58%
+		),
+		linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.16) 0%,
+			color-mix(in srgb, var(--card-bg) 78%, transparent) 100%
+		) !important;
+	border: 1px solid var(--border-muted);
+}

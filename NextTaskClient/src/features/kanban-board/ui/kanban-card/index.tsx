@@ -6,6 +6,19 @@ import type { Task, TaskAssignee } from "@shared/types/task";
 import { EditTaskModal } from "@features/task-edit";
 import styles from "./index.module.css";
 
+const formatTime = (seconds: number): string => {
+	const pad = (num: number) => num.toString().padStart(2, "0");
+	if (seconds >= 3600) {
+		const h = Math.floor(seconds / 3600);
+		const m = Math.floor((seconds % 3600) / 60);
+		const s = seconds % 60;
+		return `${pad(h)}:${pad(m)}:${pad(s)}`;
+	}
+	const m = Math.floor(seconds / 60);
+	const s = seconds % 60;
+	return `${pad(m)}:${pad(s)}`;
+};
+
 interface KanbanCardProps {
 	task: Task;
 	workspaceId: number;
@@ -123,6 +136,9 @@ const KanbanCard: FC<KanbanCardProps> = ({
 								className={`${styles.priority} ${styles[`priority_${task.priority}`]}`}
 							>
 								{task.priority}
+							</span>
+							<span className={styles.timeSpent}>
+								Затрачено: {formatTime(task.time_spent || 0)}
 							</span>
 						</div>
 

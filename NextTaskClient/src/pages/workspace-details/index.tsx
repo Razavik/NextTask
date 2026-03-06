@@ -13,7 +13,6 @@ import {
 	Timer,
 	Plus,
 	FileText,
-	MessageCircle,
 } from "lucide-react";
 import Button from "@shared/ui/button";
 import WorkspaceHeader from "@widgets/workspace-header/ui";
@@ -27,7 +26,7 @@ import { KanbanBoard } from "@features/kanban-board";
 
 const WorkspaceDetails: FC = () => {
 	const navigate = useNavigate();
-	const { openChat, setCurrentWorkspaceId } = useChatStore();
+	const { setCurrentWorkspaceId } = useChatStore();
 	const { workspaceId } = useParams<{ workspaceId: string }>();
 	const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 	const [defaultTaskStatus, setDefaultTaskStatus] = useState<
@@ -125,17 +124,6 @@ const WorkspaceDetails: FC = () => {
 		tasksDone: tasks.filter((t: Task) => t.status === "done").length,
 	};
 
-	const handleOpenChat = () => {
-		if (workspaceId) {
-			openChat({
-				id: `workspace-${workspaceId}`,
-				type: "workspace",
-				workspaceId: Number(workspaceId),
-				name: workspace?.name || "Чат пространства",
-			});
-		}
-	};
-
 	return (
 		<>
 			<CreateTaskModal
@@ -153,13 +141,6 @@ const WorkspaceDetails: FC = () => {
 			/>
 			<div className={styles.workspaceHeaderActionsRow}>
 				<div className={styles.workspaceActions}>
-					<Button
-						onClick={handleOpenChat}
-						variant="ghost"
-						title="Открыть общий чат"
-					>
-						<MessageCircle size={16} /> Общий чат
-					</Button>
 					<Button
 						onClick={() => setCreateModalOpen(true)}
 						disabled={isReader}

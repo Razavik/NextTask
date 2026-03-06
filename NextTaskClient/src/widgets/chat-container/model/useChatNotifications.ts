@@ -54,8 +54,12 @@ export const useChatNotifications = ({
 				: `pm|${m.sender_id}|${m.receiver_id}|${m.content}`;
 
 		const off = chatService.onMessage((msg) => {
-			// Пропускаем системные сообщения (обновление/удаление)
-			if ("action" in msg && (msg as any).action !== "create") {
+			const eventType =
+				typeof msg === "object" && msg && "type" in msg
+					? (msg as { type?: string }).type
+					: "new_message";
+
+			if (eventType && eventType !== "new_message") {
 				return;
 			}
 
@@ -63,7 +67,12 @@ export const useChatNotifications = ({
 			for (const [k, ts] of Array.from(recentRef.entries())) {
 				if (now - ts > TTL) recentRef.delete(k);
 			}
-			const k = makeKey(msg as Message);
+			const messagePayload =
+				typeof msg === "object" && msg && "message" in msg
+					? (msg as { message: Message }).message
+					: (msg as Message);
+
+			const k = makeKey(messagePayload);
 			const ts = recentRef.get(k);
 			if (ts && now - ts <= TTL) return;
 			recentRef.set(k, now);
@@ -73,7 +82,7 @@ export const useChatNotifications = ({
 			let senderAvatar: string | undefined;
 			let messageText = "";
 
-			const m = msg as Message;
+			const m = messagePayload;
 
 			if (m.chat_id) {
 				// Групповой чат
@@ -92,7 +101,7 @@ export const useChatNotifications = ({
 			}
 
 			// Если нет текста и нет вложений, пропускаем (чтобы избежать ошибки length of undefined)
-			if (!messageText && !(msg as any).attachments?.length) {
+			if (!messageText && !messagePayload.attachments?.length) {
 				return;
 			}
 

@@ -5,6 +5,7 @@ import Button from "@shared/ui/button";
 import api from "@shared/api/axios";
 import { useAuthStore } from "@entities/user";
 import type { User } from "@entities/user";
+import Loader from "@shared/ui/loader";
 
 interface CreateGroupModalProps {
 	onClose: () => void;
@@ -106,7 +107,7 @@ const CreateGroupModal: FC<CreateGroupModalProps> = ({ onClose, onCreate }) => {
 						<div className={styles.usersList}>
 							{isLoading ? (
 								<div className={styles.emptyState}>
-									Загрузка...
+									<Loader />
 								</div>
 							) : filteredUsers.length === 0 ? (
 								<div className={styles.emptyState}>

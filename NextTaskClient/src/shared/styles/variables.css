@@ -81,6 +81,7 @@
 :root[data-theme="light"] {
 	color-scheme: light;
 	--primary-color: #9e1ab0;
+	--primary-hover: #b91c8c;
 	--primary-light-color: #d9c5dc;
 	--primary-light: #b91c8c;
 	--primary-gradient-end: #bd19d2;
@@ -258,6 +259,7 @@
 	color-scheme: dark;
 
 	--primary-color: #9e1ab0;
+	--primary-hover: #bd19d2;
 	--primary-light-color: #d2a7d8;
 	--primary-gradient-end: #bd19d2;
 	--bg-color: var(--clr-neutral-900);

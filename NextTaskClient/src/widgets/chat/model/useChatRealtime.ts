@@ -3,6 +3,11 @@ import { chatService, type ActiveChat } from "@entities/chat";
 import type { Message } from "@shared/types/message";
 import { createMessageToast } from "@shared/model/toastStore";
 
+type ChatSocketPayload =
+	| { type?: "new_message" | "message_update"; message: Message }
+	| { type?: "message_delete"; message_id: number; chat_id?: number | null }
+	| Message;
+
 interface UseChatRealtimeOptions {
 	activeChat: ActiveChat | null;
 	activeChatRef: MutableRefObject<ActiveChat | null>;
@@ -48,8 +53,29 @@ export const useChatRealtime = ({
 			chatService.connectToGroup(activeChat.chatId, token);
 		}
 
-		const handleNewMessage = (msg: Message) => {
+		const handleNewMessage = (payload: ChatSocketPayload) => {
 			try {
+				const eventType =
+					typeof payload === "object" && payload && "type" in payload
+						? payload.type
+						: "new_message";
+
+				if (eventType === "message_delete") {
+					const deletedId = (payload as { message_id: number })
+						.message_id;
+					setMessages((prev) =>
+						prev.filter((m) => m.id !== deletedId),
+					);
+					return;
+				}
+
+				const msg =
+					typeof payload === "object" &&
+					payload &&
+					"message" in payload
+						? payload.message
+						: (payload as Message);
+
 				const currentActiveChat = activeChatRef.current;
 				const currentIsOpen = isOpenRef.current;
 
@@ -75,6 +101,17 @@ export const useChatRealtime = ({
 						(a === me && b === peerId) || (a === peerId && b === me)
 					);
 				})();
+
+				if (eventType === "message_update") {
+					if (belongsToActive) {
+						setMessages((prev) =>
+							prev.map((m) =>
+								m.id === msg.id ? { ...m, ...msg } : m,
+							),
+						);
+					}
+					return;
+				}
 
 				if (belongsToActive && shouldAcceptMessage(msg)) {
 					setMessages((prev) => [...prev, msg]);

@@ -4,7 +4,6 @@
 	cursor: pointer;
 	font-weight: 600;
 	transition:
-		background 0.2s,
 		transform 0.13s,
 		box-shadow 0.2s,
 		filter 0.2s;
@@ -34,6 +33,7 @@
 }
 
 .primary:hover:not(:disabled) {
+	background: var(--primary-hover);
 	filter: brightness(1.03);
 	transform: translateY(-1px);
 }

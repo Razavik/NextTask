@@ -22,6 +22,14 @@ export const useTaskTracker = ({
 	const queryClient = useQueryClient();
 	const addToast = useToastStore((state) => state.addToast);
 
+	const invalidateTaskQueries = useCallback(() => {
+		queryClient.invalidateQueries({
+			queryKey: ["task", workspaceId, taskId],
+		});
+		queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] });
+		queryClient.invalidateQueries({ queryKey: ["my-tasks"] });
+	}, [queryClient, taskId, workspaceId]);
+
 	const [isTracking, setIsTracking] = useState(false);
 	const [localTimeSpent, setLocalTimeSpent] = useState(0); // Время, натреканное в текущей сессии
 	const [comment, setComment] = useState("");
@@ -55,6 +63,8 @@ export const useTaskTracker = ({
 					return updatedTask;
 				},
 			);
+
+			invalidateTaskQueries();
 
 			addToast(createSuccessToast("Время сохранено"));
 			setLocalTimeSpent(0);

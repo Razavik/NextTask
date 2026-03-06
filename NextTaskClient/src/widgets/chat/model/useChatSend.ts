@@ -288,9 +288,17 @@ export const useChatSend = ({
 				);
 			}
 			setMessages((prev) =>
-				prev.map((m) =>
-					m.id === msg.id ? { ...m, is_pinned: isPinned } : m,
-				),
+				prev.map((m) => {
+					if (m.id === msg.id) {
+						return { ...m, is_pinned: isPinned };
+					}
+
+					if (isPinned && m.is_pinned) {
+						return { ...m, is_pinned: false };
+					}
+
+					return m;
+				}),
 			);
 		} catch (error) {
 			console.error("Ошибка закрепления:", error);

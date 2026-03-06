@@ -1,10 +1,9 @@
-import { FC, useMemo, useState, useEffect } from "react";
+import { FC, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Globe, Settings, Users } from "lucide-react";
+import { Settings, Users, Globe } from "lucide-react";
 import styles from "./index.module.css";
 import glass from "@shared/styles/glass.module.css";
 import Loader from "@shared/ui/loader";
-import TabNavigation, { TabItem } from "@shared/ui/tab-navigation";
 import GeneralSettings from "@pages/workspace-settings/components/general-settings";
 import InviteSettings from "@pages/workspace-settings/components/invite-settings";
 import WorkspaceMembers from "@pages/workspace-settings/components/workspace-members";
@@ -14,9 +13,8 @@ import { useAuthStore } from "@entities/user";
 
 const WorkspaceSettings: FC = () => {
 	const navigate = useNavigate();
-	const { workspaceId, tab } = useParams<{
+	const { workspaceId } = useParams<{
 		workspaceId: string;
-		tab?: string;
 	}>();
 	const wsId = Number(workspaceId);
 	const userId = useAuthStore((state) => state.user?.id);
@@ -25,40 +23,13 @@ const WorkspaceSettings: FC = () => {
 
 	const isOwner = workspace?.role === "owner";
 
-	const urlToTab = (value?: string | null): string => {
-		if (!value) return "general";
-		if (value === "general" || value === "members" || value === "invites")
-			return value;
-		return "general";
+	const generalRef = useRef<HTMLDivElement | null>(null);
+	const membersRef = useRef<HTMLDivElement | null>(null);
+	const invitesRef = useRef<HTMLDivElement | null>(null);
+
+	const handleScrollTo = (ref: React.RefObject<HTMLDivElement | null>) => {
+		ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 	};
-
-	const [activeTab, setActiveTab] = useState<string>(() => urlToTab(tab));
-
-	const tabs: TabItem[] = useMemo(
-		() => [
-			{
-				id: "general",
-				label: "Общее",
-				icon: <Settings size={16} />,
-			},
-			{
-				id: "members",
-				label: "Участники",
-				icon: <Users size={16} />,
-			},
-			{
-				id: "invites",
-				label: "Приглашения",
-				icon: <Globe size={16} />,
-				disabled: !isOwner,
-			},
-		],
-		[isOwner],
-	);
-
-	useEffect(() => {
-		setActiveTab(urlToTab(tab));
-	}, [tab]);
 
 	const handleDeleteWorkspace = async () => {
 		console.log("Deleting workspace:", wsId);
@@ -76,9 +47,7 @@ const WorkspaceSettings: FC = () => {
 	}
 
 	if (!workspace) {
-		return (
-			<div className={styles.error}>Пространство не найдено!</div>
-		);
+		return <div className={styles.error}>Пространство не найдено!</div>;
 	}
 
 	return (
@@ -89,36 +58,127 @@ const WorkspaceSettings: FC = () => {
 				titleIcon={<Settings size={24} />}
 			/>
 
-			<TabNavigation
-				tabs={tabs}
-				activeTab={activeTab}
-				onTabChange={(nextId) => {
-					setActiveTab(nextId);
-					navigate(
-						`/workspaces/workspace/${wsId}/settings/${nextId}`,
-						{
-							replace: false,
-						},
-					);
-				}}
-			/>
+			<section className={styles.layout}>
+				<aside className={`${styles.sidebar} ${glass.glassPanel}`}>
+					<div className={styles.sidebarHeader}>
+						<h2 className={styles.sidebarTitle}>
+							Что можно настроить
+						</h2>
+						<p className={styles.sidebarText}>
+							Все основные параметры пространства собраны на одной
+							странице.
+						</p>
+					</div>
+					<div className={styles.sidebarList}>
+						<div
+							className={`${styles.sidebarItem} ${glass.glassItem}`}
+							onClick={() => handleScrollTo(generalRef)}
+						>
+							<Settings size={16} />
+							<span>Общие параметры пространства</span>
+						</div>
+						<div
+							className={`${styles.sidebarItem} ${glass.glassItem}`}
+							onClick={() => handleScrollTo(membersRef)}
+						>
+							<Users size={16} />
+							<span>Управление участниками</span>
+						</div>
+						{isOwner && (
+							<div
+								className={`${styles.sidebarItem} ${glass.glassItem}`}
+								onClick={() => handleScrollTo(invitesRef)}
+							>
+								<Globe size={16} />
+								<span>Приглашения и доступ</span>
+							</div>
+						)}
+					</div>
+				</aside>
 
-			<section className={`${styles.section} ${glass.glassSurface}`}>
-				{activeTab === "general" && (
-					<GeneralSettings
-						workspace={workspace!}
-						onDelete={handleDeleteWorkspace}
-						isOwner={!!isOwner}
-					/>
-				)}
+				<div className={styles.contentColumn}>
+					<div className={styles.summaryRow}>
+						<div
+							className={`${styles.summaryCard} ${glass.glassCard}`}
+						>
+							<span className={styles.summaryLabel}>Роль</span>
+							<strong className={styles.summaryValue}>
+								{isOwner ? "Владелец" : "Участник"}
+							</strong>
+						</div>
+						<div
+							className={`${styles.summaryCard} ${glass.glassCard}`}
+						>
+							<span className={styles.summaryLabel}>
+								Статус доступа
+							</span>
+							<strong className={styles.summaryValue}>
+								{isOwner
+									? "Полный доступ"
+									: "Ограниченный доступ"}
+							</strong>
+						</div>
+					</div>
 
-				{activeTab === "members" && (
-					<WorkspaceMembers workspaceId={wsId} isOwner={!!isOwner} />
-				)}
+					<section
+						className={`${styles.section}`}
+					>
+						<div
+							className={`${styles.block} ${glass.glassSoft}`}
+							ref={generalRef}
+						>
+							<div className={styles.blockHeader}>
+								<h3 className={styles.blockTitle}>
+									Общие настройки
+								</h3>
+								<p className={styles.blockText}>
+									Изменяйте название, описание и управляйте
+									жизненным циклом пространства.
+								</p>
+							</div>
+							<GeneralSettings
+								workspace={workspace!}
+								onDelete={handleDeleteWorkspace}
+								isOwner={!!isOwner}
+							/>
+						</div>
 
-				{activeTab === "invites" && isOwner && (
-					<InviteSettings workspaceId={wsId} />
-				)}
+						<div
+							className={`${styles.block} ${glass.glassSoft}`}
+							ref={membersRef}
+						>
+							<div className={styles.blockHeader}>
+								<h3 className={styles.blockTitle}>Участники</h3>
+								<p className={styles.blockText}>
+									Просматривайте состав команды и управляйте
+									доступом участников.
+								</p>
+							</div>
+							<WorkspaceMembers
+								workspaceId={wsId}
+								isOwner={!!isOwner}
+							/>
+						</div>
+
+						{isOwner && (
+							<div
+								className={`${styles.block} ${glass.glassSoft}`}
+								ref={invitesRef}
+							>
+								<div className={styles.blockHeader}>
+									<h3 className={styles.blockTitle}>
+										Приглашения
+									</h3>
+									<p className={styles.blockText}>
+										Отправляйте приглашения новым участникам
+										и контролируйте вход в пространство.
+									</p>
+								</div>
+								<InviteSettings workspaceId={wsId} />
+							</div>
+						)}
+					</section>
+				</div>
 			</section>
 		</>
 	);

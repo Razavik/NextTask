@@ -1,112 +1,217 @@
-/* Основные стили для WorkspaceSettings */
-.header {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	margin-bottom: 32px;
-	padding-bottom: 16px;
-	border-bottom: 1px solid var(--input-border-color);
-	border-radius: 16px 16px 0 0;
+.metaCard,
+.summaryCard,
+.sidebar {
+	border: 1px solid var(--input-border-color);
+	border-radius: 20px;
 }
 
-.backBtn {
-	background: none;
-	border: none;
-	color: var(--text-color-soft);
-	cursor: pointer;
-	padding: 8px;
-	border-radius: 6px;
-	transition: all 0.2s;
+.metaCard {
 	display: flex;
-	align-items: center;
+	flex-direction: column;
 	justify-content: center;
+	gap: 10px;
+	padding: 18px;
+	min-height: 120px;
 }
 
-.backBtn:hover {
-	background: var(--hover-bg-color);
+.metaLabel,
+.summaryLabel {
+	font-size: 0.8rem;
+	color: var(--text-color-soft);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	font-weight: 700;
+}
+
+.metaValue,
+.summaryValue {
+	font-size: 1.15rem;
+	color: var(--text-color);
+	line-height: 1.3;
+}
+
+.layout {
+	display: grid;
+	grid-template-columns: 300px minmax(0, 1fr);
+	gap: 24px;
+	align-items: start;
+}
+
+.sidebar {
+	position: sticky;
+	top: 0;
+	padding: 20px;
+}
+
+.sidebarHeader {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 18px;
+}
+
+.sidebarTitle {
+	margin: 0;
+	font-size: 1.1rem;
 	color: var(--text-color);
 }
 
-.titleSection {
+.sidebarText {
+	margin: 0;
+	font-size: 0.92rem;
+	line-height: 1.6;
+	color: var(--text-color-soft);
+}
+
+.sidebarList {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.sidebarItem {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-}
-
-.title {
-	font-size: 1.75rem;
-	font-weight: 600;
+	gap: 10px;
+	padding: 12px 14px;
+	border-radius: 14px;
 	color: var(--text-color);
-	margin: 0;
+	font-size: 0.94rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
 }
 
-/* Стили табов перенесены в компонент TabNavigation */
+.sidebarItem:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 10px 24px rgba(158, 26, 176, 0.16);
+}
+
+.sidebarItem :where(svg) {
+	color: var(--primary-color);
+	flex-shrink: 0;
+}
+
+.contentColumn {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	min-width: 0;
+}
+
+.summaryRow {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.summaryCard {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 18px 20px;
+}
 
 .section {
-	background: linear-gradient(
-		135deg,
-		var(--card-bg) 0%,
-		rgba(255, 255, 255, 0.02) 100%
-	);
-	border-radius: 16px;
-	border: 1px solid var(--input-border-color);
 	position: relative;
+	border-radius: 22px;
 }
 
-.section::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		var(--primary-color) 50%,
-		transparent 100%
-	);
-	opacity: 0.6;
+.block {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	padding: 22px;
+	border-radius: 18px;
 }
 
-/* Остальные стили перенесены в отдельные модули компонентов */
+.block + .block {
+	margin-top: 20px;
+}
 
-/* Responsive стили для основного компонента */
+.blockHeader {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.blockTitle {
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 700;
+	color: var(--text-color);
+}
+
+.blockText {
+	margin: 0;
+	font-size: 0.95rem;
+	line-height: 1.65;
+	color: var(--text-color-soft);
+}
+
+@media (max-width: 1024px) {
+	.heroCard {
+		flex-direction: column;
+	}
+
+	.heroMeta {
+		min-width: 0;
+	}
+
+	.layout {
+		grid-template-columns: 1fr;
+	}
+
+	.sidebar {
+		position: static;
+	}
+}
+
 @media (max-width: 768px) {
-	.header {
-		margin-bottom: 24px;
-		gap: 12px;
+	.heroCard {
+		padding: 22px;
+		border-radius: 20px;
 	}
 
-	.titleSection {
-		width: 100%;
+	.heroMeta,
+	.summaryRow {
+		grid-template-columns: 1fr;
 	}
 
-	.title {
+	.sidebar,
+	.section {
+		border-radius: 18px;
+	}
+
+	.section {
+		padding: 18px;
+	}
+
+	.block {
+		padding: 18px;
+	}
+}
+
+@media (max-width: 560px) {
+	.hero {
+		margin-bottom: 18px;
+	}
+
+	.heroCard,
+	.sidebar,
+	.summaryCard {
+		padding: 16px;
+	}
+
+	.sidebarItem {
+		font-size: 0.88rem;
+	}
+
+	.heroTitle {
 		font-size: 1.5rem;
 	}
 
-	.content {
-		border-radius: 12px;
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-	}
-}
-
-@media (max-width: 480px) {
-	.header {
-		margin-bottom: 20px;
-		gap: 10px;
-	}
-
-	.titleSection svg {
-		display: none;
-	}
-
-	.title {
-		font-size: 1.3rem;
-	}
-
-	.content {
-		border-radius: 8px;
+	.layout {
+		gap: 18px;
 	}
 }

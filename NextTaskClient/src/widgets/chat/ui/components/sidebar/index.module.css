@@ -132,10 +132,12 @@
 }
 
 .contactsListCollapsed .contactItem {
-	padding: 12px;
+	padding: 6px;
 	margin: 4px;
 	width: calc(100% - 8px);
 	gap: 0;
+	justify-content: center;
+	margin-left: 2px;
 }
 
 .contactItem:hover {

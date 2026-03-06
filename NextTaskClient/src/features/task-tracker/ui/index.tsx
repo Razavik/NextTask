@@ -44,6 +44,16 @@ const TaskTracker: FC<TaskTrackerProps> = ({
 	const { user: currentUser } = useAuthStore();
 	const addToast = useToastStore((state) => state.addToast);
 
+	const invalidateTaskQueries = async () => {
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: ["task", workspaceId, task.id],
+			}),
+			queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
+			queryClient.invalidateQueries({ queryKey: ["my-tasks"] }),
+		]);
+	};
+
 	const {
 		isTracking,
 		localTimeSpent,
@@ -176,6 +186,8 @@ const TaskTracker: FC<TaskTrackerProps> = ({
 				});
 			}
 
+			await invalidateTaskQueries();
+
 			// Показываем успешный тост
 			addToast(createSuccessToast("Запись о времени успешно обновлена"));
 
@@ -241,6 +253,8 @@ const TaskTracker: FC<TaskTrackerProps> = ({
 					(task.time_spent || 0) - deleteTimeSpent,
 				),
 			});
+
+			await invalidateTaskQueries();
 
 			// Показываем успешный тост
 			addToast(createSuccessToast("Запись о времени успешно удалена"));

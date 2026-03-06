@@ -147,43 +147,53 @@
 }
 
 .leaveSection {
-	border-top: 1px solid var(--input-border-color);
-	padding-top: 24px;
+	border-top: none;
+	padding: 16px;
 	margin-top: 24px;
+	background: linear-gradient(
+		180deg,
+		color-mix(in oklab, var(--danger-color, #f44336) 6%, transparent) 0%,
+		transparent 100%
+	);
+	border: 1px solid
+		color-mix(in oklab, var(--danger-color, #f44336) 22%, transparent);
+	border-radius: var(--radius);
 }
 
 .leaveHeader {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	color: var(--text-color);
-	font-weight: 600;
-	margin-bottom: 8px;
+	color: var(--danger-color, #f44336);
+	font-weight: 700;
+	margin-bottom: 6px;
+	line-height: 1.2;
+	text-transform: none;
+}
+
+.leaveHeader :where(svg) {
+	color: var(--danger-color, #f44336);
 }
 
 .leaveText {
 	color: var(--text-color-soft);
-	margin: 0 0 12px 0;
+	margin: 0 0 16px 0;
 }
 
 .leaveBtn {
-	background: var(--danger-color, #f44336);
-	color: var(--text-on-accent);
-	border: 1px solid
-		color-mix(in srgb, var(--danger-color, #f44336) 30%, transparent);
+	background: var(--danger-color, #f44336) !important;
+	color: white !important;
 	font-weight: 500;
+	font-size: 14px !important;
+	padding: 8px 12px !important;
 	transition:
 		background 0.2s,
 		transform 0.2s,
 		box-shadow 0.2s;
-	padding-inline: 16px;
-	box-shadow: none;
 }
 
 .leaveBtn:hover:not(:disabled) {
-	background: var(--danger-hover, #d32f2f);
-	transform: translateY(-1px);
-	box-shadow: none;
+	background: var(--danger-hover, #d32f2f) !important;
 }
 
 .leaveBtn:disabled {

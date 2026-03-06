@@ -16,6 +16,83 @@
 	gap: 16px;
 }
 
+.steps {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 8px;
+}
+
+.stepItem {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	color: var(--text-color-secondary, #9ca3af);
+	font-size: 0.8rem;
+	min-width: 72px;
+}
+
+.stepItemActive {
+	color: var(--primary-color);
+}
+
+.stepDot {
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	border: 1px solid var(--input-border-color);
+	background: var(--input-bg-color);
+	font-weight: 600;
+	transition: all 0.2s ease;
+}
+
+.stepItemActive .stepDot {
+	border-color: var(--primary-color);
+	background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+	box-shadow: 0 0 0 4px
+		color-mix(in srgb, var(--primary-color) 12%, transparent);
+}
+
+.stepLine {
+	flex: 1;
+	height: 1px;
+	background: var(--input-border-color);
+	margin-bottom: 22px;
+}
+
+.stepPanel {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 20px;
+	border: 1px solid var(--input-border-color);
+	border-radius: calc(var(--radius) + 4px);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--card-bg) 88%, white) 0%,
+		var(--card-bg) 100%
+	);
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.stepDescription {
+	margin: 0;
+	color: var(--text-color-secondary, #9ca3af);
+	font-size: 0.95rem;
+	line-height: 1.5;
+}
+
+.actionsRow {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+}
+
 .title {
 	text-align: center;
 	margin-bottom: 18px;
@@ -73,4 +150,37 @@
 	border-radius: var(--radius);
 	text-align: center;
 	margin-bottom: 16px;
+}
+
+@media (max-width: 560px) {
+	.authContainer {
+		margin: 32px 16px;
+		padding: 24px 18px;
+	}
+
+	.steps {
+		gap: 6px;
+	}
+
+	.stepItem {
+		min-width: 56px;
+		font-size: 0.7rem;
+	}
+
+	.stepDot {
+		width: 28px;
+		height: 28px;
+	}
+
+	.stepLine {
+		margin-bottom: 20px;
+	}
+
+	.stepPanel {
+		padding: 16px;
+	}
+
+	.actionsRow {
+		flex-direction: column-reverse;
+	}
 }

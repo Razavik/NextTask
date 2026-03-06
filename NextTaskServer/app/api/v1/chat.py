@@ -397,8 +397,24 @@ async def update_message(
     
     if message_update.attachments is not None:
         message.attachments = json.dumps(message_update.attachments)
+
+    previously_pinned_message = None
         
     if message_update.is_pinned is not None:
+        if message_update.is_pinned:
+            previously_pinned_message = (
+                db.query(ORMMessage)
+                .filter(
+                    ORMMessage.id != message.id,
+                    ORMMessage.chat_id.is_(None),
+                    ORMMessage.sender_id.in_([message.sender_id, message.receiver_id]),
+                    ORMMessage.receiver_id.in_([message.sender_id, message.receiver_id]),
+                    ORMMessage.is_pinned == True,
+                )
+                .first()
+            )
+            if previously_pinned_message:
+                previously_pinned_message.is_pinned = False
         message.is_pinned = message_update.is_pinned
         
     if message_update.content is not None or message_update.attachments is not None:
@@ -408,6 +424,11 @@ async def update_message(
     db.refresh(message)
     
     attachments_list = json.loads(message.attachments) if message.attachments else []
+    previous_attachments_list = (
+        json.loads(previously_pinned_message.attachments)
+        if previously_pinned_message and previously_pinned_message.attachments
+        else []
+    )
     
     # Загружаем ответ на сообщение, если есть
     replied_message_data = None
@@ -446,9 +467,32 @@ async def update_message(
             "attachments": attachments_list
         }
     }
+
+    previous_response = None
+    if previously_pinned_message:
+        previous_response = {
+            "type": "message_update",
+            "message": {
+                "id": previously_pinned_message.id,
+                "content": previously_pinned_message.content,
+                "sender_id": previously_pinned_message.sender_id,
+                "receiver_id": previously_pinned_message.receiver_id,
+                "is_read": previously_pinned_message.is_read,
+                "is_edited": previously_pinned_message.is_edited,
+                "is_pinned": previously_pinned_message.is_pinned,
+                "reply_to_id": previously_pinned_message.reply_to_id,
+                "replied_message": None,
+                "created_at": previously_pinned_message.created_at.isoformat(),
+                "updated_at": previously_pinned_message.updated_at.isoformat() if previously_pinned_message.updated_at else None,
+                "attachments": previous_attachments_list
+            }
+        }
     
     await manager.send_personal_message(response, message.receiver_id)
     await manager.send_personal_message(response, message.sender_id)
+    if previous_response:
+        await manager.send_personal_message(previous_response, message.receiver_id)
+        await manager.send_personal_message(previous_response, message.sender_id)
     
     return MessageSchema(
         id=message.id,
@@ -516,8 +560,22 @@ async def update_workspace_message(
     
     if message_update.attachments is not None:
         message.attachments = json.dumps(message_update.attachments)
+
+    previously_pinned_message = None
         
     if message_update.is_pinned is not None:
+        if message_update.is_pinned:
+            previously_pinned_message = (
+                db.query(ORMMessage)
+                .filter(
+                    ORMMessage.id != message.id,
+                    ORMMessage.chat_id == message.chat_id,
+                    ORMMessage.is_pinned == True,
+                )
+                .first()
+            )
+            if previously_pinned_message:
+                previously_pinned_message.is_pinned = False
         message.is_pinned = message_update.is_pinned
         
     if message_update.content is not None or message_update.attachments is not None:
@@ -527,6 +585,11 @@ async def update_workspace_message(
     db.refresh(message)
     
     attachments_list = json.loads(message.attachments) if message.attachments else []
+    previous_attachments_list = (
+        json.loads(previously_pinned_message.attachments)
+        if previously_pinned_message and previously_pinned_message.attachments
+        else []
+    )
     
     # Загружаем ответ на сообщение, если есть
     replied_message_data = None
@@ -564,8 +627,29 @@ async def update_workspace_message(
             "attachments": attachments_list
         }
     }
+
+    previous_response = None
+    if previously_pinned_message:
+        previous_response = {
+            "type": "message_update",
+            "message": {
+                "id": previously_pinned_message.id,
+                "content": previously_pinned_message.content,
+                "chat_id": previously_pinned_message.chat_id,
+                "sender_id": previously_pinned_message.sender_id,
+                "is_edited": previously_pinned_message.is_edited,
+                "is_pinned": previously_pinned_message.is_pinned,
+                "reply_to_id": previously_pinned_message.reply_to_id,
+                "replied_message": None,
+                "created_at": previously_pinned_message.created_at.isoformat(),
+                "updated_at": previously_pinned_message.updated_at.isoformat() if previously_pinned_message.updated_at else None,
+                "attachments": previous_attachments_list
+            }
+        }
     
     await manager.broadcast_to_group(response, message.chat_id, None)
+    if previous_response:
+        await manager.broadcast_to_group(previous_response, message.chat_id, None)
     
     return MessageSchema(
         id=message.id,

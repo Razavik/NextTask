@@ -81,6 +81,7 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+	position: relative;
 }
 
 /* Планшеты и узкие экраны */
