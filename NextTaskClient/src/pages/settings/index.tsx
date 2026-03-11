@@ -12,7 +12,9 @@ import {
 } from "lucide-react";
 import Button from "@shared/ui/button";
 import { useToast } from "@shared/lib/hooks/useToast";
-import { profileService, useAuthStore } from "@entities/user";
+import { useAuthStore, type ProfileData } from "@entities/user";
+import { useSettingsSync } from "@shared/hooks/useSettingsSync";
+import { apiService, ApiRoute } from "@shared/api";
 import { THEME_STORAGE_KEY } from "@app/providers/theme-provider";
 import {
 	applyUserSettings,
@@ -55,7 +57,9 @@ const SettingsPage: FC = () => {
 	useEffect(() => {
 		const loadSettings = async () => {
 			try {
-				const profile = await profileService.getProfile();
+				const profile = await apiService.get<ProfileData>(
+					ApiRoute.ProfileMe,
+				);
 				if (profile.settings) {
 					applyUserSettings(profile.settings);
 				}
@@ -76,7 +80,7 @@ const SettingsPage: FC = () => {
 		{
 			key: "openSettings",
 			title: "Открыть настройки",
-			description: "Быстрый переход на страницу /settings",
+			description: "Быстрый переход на страницу настроек",
 			shortcut: DEFAULT_HOTKEY_SETTINGS.openSettings,
 		},
 		{
@@ -97,26 +101,22 @@ const SettingsPage: FC = () => {
 			description: "Раскрывает окно чата поверх интерфейса",
 			shortcut: DEFAULT_HOTKEY_SETTINGS.openChat,
 		},
+		{
+			key: "openWorkspaces",
+			title: "Открыть список пространств",
+			description: "Переход на страницу /workspaces",
+			shortcut: DEFAULT_HOTKEY_SETTINGS.openWorkspaces,
+		},
 	];
+
+	const { syncSettings } = useSettingsSync();
 
 	const syncSettingsToServer = async (
 		overrides?: Partial<ReturnType<typeof collectCurrentUserSettings>>,
 	) => {
 		setIsSavingSettings(true);
 		try {
-			const current = collectCurrentUserSettings();
-			await profileService.updateSettings({
-				...current,
-				...overrides,
-				notifications: {
-					...current.notifications,
-					...overrides?.notifications,
-				},
-				hotkeys: {
-					...current.hotkeys,
-					...overrides?.hotkeys,
-				},
-			});
+			await syncSettings(overrides);
 		} catch {
 			toast.error("Ошибка", "Не удалось сохранить настройки на сервере");
 		} finally {

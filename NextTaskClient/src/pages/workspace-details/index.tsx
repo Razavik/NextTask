@@ -1,10 +1,11 @@
 ﻿import { FC, useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useTasksQuery, tasksService } from "@entities/task";
+import { useTasksQuery } from "@entities/task";
 import { useWorkspaceQuery } from "@entities/workspace";
 import { useChatStore } from "@entities/chat";
 import { useAuthStore } from "@entities/user";
 import type { Task } from "@shared/types/task";
+import { apiService, ApiRoute } from "@shared/api";
 import {
 	Settings,
 	ClipboardList,
@@ -221,7 +222,9 @@ const WorkspaceDetails: FC = () => {
 					statusFilter={statusFilter}
 					onTaskUpdate={() => refetchTasks()}
 					onTaskDelete={async (taskId: number) => {
-						await tasksService.deleteTask(taskId);
+						await apiService.delete(ApiRoute.TaskById, undefined, {
+							pathParams: { taskId },
+						});
 						refetchTasks();
 					}}
 					onAddTask={(status) => {

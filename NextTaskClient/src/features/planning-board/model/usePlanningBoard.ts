@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { tasksService } from "@entities/task";
+import { apiService, ApiRoute } from "@shared/api";
 import {
 	useToastStore,
 	createErrorToast,
@@ -10,7 +10,27 @@ import type {
 	UpdateTaskPlanRequest,
 	PlanningUser,
 	PlanningTaskOption,
+	TaskPlan,
 } from "@shared/types/task";
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+	if (
+		error &&
+		typeof error === "object" &&
+		"response" in error &&
+		error.response &&
+		typeof error.response === "object" &&
+		"data" in error.response &&
+		error.response.data &&
+		typeof error.response.data === "object" &&
+		"detail" in error.response.data &&
+		typeof error.response.data.detail === "string"
+	) {
+		return error.response.data.detail;
+	}
+
+	return fallback;
+};
 
 export const usePlanningBoard = (
 	userId?: number,
@@ -20,10 +40,16 @@ export const usePlanningBoard = (
 	const queryClient = useQueryClient();
 	const queryKey = ["planning", "global", startDate, endDate, userId];
 
-	const { data: plans = [], isLoading } = useQuery({
+	const { data: plans = [], isLoading } = useQuery<TaskPlan[]>({
 		queryKey,
 		queryFn: () =>
-			tasksService.fetchGlobalPlanning(startDate!, endDate!, userId),
+			apiService.get<TaskPlan[]>(ApiRoute.Planning, {
+				query: {
+					start_date: startDate!,
+					end_date: endDate!,
+					user_id: userId,
+				},
+			}),
 		enabled: !!startDate && !!endDate,
 	});
 
@@ -31,14 +57,17 @@ export const usePlanningBoard = (
 		PlanningUser[]
 	>({
 		queryKey: ["planning", "users"],
-		queryFn: () => tasksService.fetchPlanningUsers(),
+		queryFn: () => apiService.get<PlanningUser[]>(ApiRoute.PlanningUsers),
 	});
 
 	const { data: planningTasks = [], isLoading: isLoadingTasks } = useQuery<
 		PlanningTaskOption[]
 	>({
 		queryKey: ["planning", "tasks", userId],
-		queryFn: () => tasksService.fetchPlanningTasks(userId!),
+		queryFn: () =>
+			apiService.get<PlanningTaskOption[]>(ApiRoute.PlanningTasks, {
+				query: { user_id: userId! },
+			}),
 		enabled: !!userId,
 	});
 
@@ -54,12 +83,22 @@ export const usePlanningBoard = (
 
 			if (existingPlan) {
 				// Если план существует, обновляем его, суммируя часы
-				return tasksService.updateTaskPlan(existingPlan.id, {
-					hours: existingPlan.hours + request.hours,
-				});
+				return apiService.put<TaskPlan, UpdateTaskPlanRequest>(
+					ApiRoute.PlanningById,
+					{ hours: existingPlan.hours + request.hours },
+					{
+						pathParams: { planId: existingPlan.id },
+					},
+				);
 			} else {
 				// Если плана нет, создаем новый
-				return tasksService.createTaskPlan(request.task_id, request);
+				return apiService.post<TaskPlan, CreateTaskPlanRequest>(
+					ApiRoute.TaskPlanning,
+					request,
+					{
+						pathParams: { taskId: request.task_id },
+					},
+				);
 			}
 		},
 		onSuccess: (_, variables) => {
@@ -89,10 +128,11 @@ export const usePlanningBoard = (
 					.addToast(createSuccessToast("Время запланировано"));
 			}
 		},
-		onError: (error: any) => {
-			const message =
-				error.response?.data?.detail ||
-				"Ошибка при планировании времени";
+		onError: (error: unknown) => {
+			const message = getErrorMessage(
+				error,
+				"Ошибка при планировании времени",
+			);
 			useToastStore.getState().addToast(createErrorToast(message));
 		},
 	});
@@ -104,7 +144,14 @@ export const usePlanningBoard = (
 		}: {
 			planId: number;
 			request: UpdateTaskPlanRequest;
-		}) => tasksService.updateTaskPlan(planId, request),
+		}) =>
+			apiService.put<TaskPlan, UpdateTaskPlanRequest>(
+				ApiRoute.PlanningById,
+				request,
+				{
+					pathParams: { planId },
+				},
+			),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ["planning", "global"],
@@ -113,15 +160,24 @@ export const usePlanningBoard = (
 				.getState()
 				.addToast(createSuccessToast("План обновлен"));
 		},
-		onError: (error: any) => {
-			const message =
-				error.response?.data?.detail || "Ошибка при обновлении плана";
+		onError: (error: unknown) => {
+			const message = getErrorMessage(
+				error,
+				"Ошибка при обновлении плана",
+			);
 			useToastStore.getState().addToast(createErrorToast(message));
 		},
 	});
 
 	const { mutate: deletePlan, isPending: isDeleting } = useMutation({
-		mutationFn: (planId: number) => tasksService.deleteTaskPlan(planId),
+		mutationFn: (planId: number) =>
+			apiService.delete<{ status: string; message: string }>(
+				ApiRoute.PlanningById,
+				undefined,
+				{
+					pathParams: { planId },
+				},
+			),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ["planning", "global"],

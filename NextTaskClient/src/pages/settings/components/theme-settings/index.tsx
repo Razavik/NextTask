@@ -1,21 +1,17 @@
 ﻿import { FC } from "react";
-import { profileService } from "@entities/user";
 import { useTheme } from "@shared/lib/hooks/useTheme";
+import { useSettingsSync } from "@shared/hooks/useSettingsSync";
 import type { Theme } from "@app/providers/theme-provider";
-import { collectCurrentUserSettings } from "@shared/lib/settings";
 import styles from "./index.module.css";
 
 const ThemeSettings: FC = () => {
 	const { theme, setTheme } = useTheme();
+	const { syncSettings } = useSettingsSync();
 
 	const handleThemeSelect = async (nextTheme: Theme) => {
 		setTheme(nextTheme);
 		try {
-			const current = collectCurrentUserSettings();
-			await profileService.updateSettings({
-				...current,
-				theme: nextTheme,
-			});
+			await syncSettings({ theme: nextTheme });
 		} catch {
 			// no-op
 		}

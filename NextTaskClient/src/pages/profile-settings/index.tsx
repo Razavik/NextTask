@@ -1,5 +1,6 @@
 import { FC, useState, useEffect } from "react";
-import { useAuthStore, profileService } from "@entities/user";
+import { useAuthStore } from "@entities/user";
+import { apiService } from "@shared/api";
 import { User, Lock, Save, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import styles from "./index.module.css";
@@ -55,7 +56,7 @@ const ProfileSettings: FC = () => {
 		setProfileSuccess(null);
 
 		try {
-			await profileService.updateProfile({
+			await apiService.put("/profile/me", {
 				name: profileForm.name.trim(),
 			});
 			setProfileSuccess("Профиль успешно обновлен");
@@ -85,7 +86,7 @@ const ProfileSettings: FC = () => {
 		}
 
 		try {
-			await profileService.changePassword({
+			await apiService.post("/profile/change-password", {
 				current_password: passwordForm.currentPassword,
 				new_password: passwordForm.newPassword,
 			});

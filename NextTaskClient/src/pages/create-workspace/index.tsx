@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { workspacesService } from "@entities/workspace";
+import { apiService, ApiRoute } from "@shared/api";
+import type { Workspace } from "@shared/types/workspace";
 import Input from "@shared/ui/input";
 import Textarea from "@shared/ui/textarea";
 import Button from "@shared/ui/button";
@@ -28,7 +29,10 @@ const CreateWorkspace = () => {
 			setIsSubmitting(true);
 			setError("");
 
-			const workspace = await workspacesService.createWorkspace({
+			const workspace = await apiService.post<
+				Workspace,
+				{ name: string; description?: string }
+			>(ApiRoute.Workspaces, {
 				name: name.trim(),
 				description: description || undefined,
 			});

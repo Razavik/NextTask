@@ -16,6 +16,7 @@ export interface RepliedMessageRef {
 
 export interface Message {
 	id: number;
+	temp_client_id?: string;
 	sender_id: number;
 	receiver_id?: number | null;
 	chat_id?: number | null;

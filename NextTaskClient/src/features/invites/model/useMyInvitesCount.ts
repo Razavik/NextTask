@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getMyInvites } from "./invites.service";
+import { getMyInvites } from "./invites.api";
 
 /**
  * Возвращает количество входящих приглашений текущего пользователя.

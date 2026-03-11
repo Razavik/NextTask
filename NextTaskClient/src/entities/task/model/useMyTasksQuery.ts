@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { tasksService } from "./tasks.service";
-import type { Task } from "@shared/types/task";
+import { apiService, ApiRoute } from "@shared/api";
+import type { Task, TasksResponse } from "@shared/types/task";
 
 export function useMyTasksQuery(userId?: number) {
 	return useQuery<Task[], Error>({
@@ -8,7 +8,10 @@ export function useMyTasksQuery(userId?: number) {
 		queryFn: async () => {
 			if (!userId) return [];
 			try {
-				return await tasksService.fetchMyTasks();
+				const response = await apiService.get<TasksResponse>(
+					ApiRoute.TasksMy,
+				);
+				return response.tasks;
 			} catch (error) {
 				console.error("Failed to fetch my tasks:", error);
 				return [];

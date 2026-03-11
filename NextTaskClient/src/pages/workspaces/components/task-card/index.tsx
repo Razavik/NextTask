@@ -2,20 +2,9 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import type { Task } from "@shared/types/task";
+import { formatDuration } from "@shared/lib/time";
+import { useActiveTaskTracking } from "@shared/lib/hooks/useActiveTaskTracking";
 import styles from "./index.module.css";
-
-const formatTime = (seconds: number): string => {
-	const pad = (num: number) => num.toString().padStart(2, "0");
-	if (seconds >= 3600) {
-		const h = Math.floor(seconds / 3600);
-		const m = Math.floor((seconds % 3600) / 60);
-		const s = seconds % 60;
-		return `${pad(h)}:${pad(m)}:${pad(s)}`;
-	}
-	const m = Math.floor(seconds / 60);
-	const s = seconds % 60;
-	return `${pad(m)}:${pad(s)}`;
-};
 
 interface TaskCardProps {
 	task: Task;
@@ -24,6 +13,10 @@ interface TaskCardProps {
 
 export const TaskCard: FC<TaskCardProps> = ({ task, variant = "upcoming" }) => {
 	const isOverdue = variant === "overdue";
+	const { displaySeconds, isActiveTracking } = useActiveTaskTracking(
+		task.id,
+		task.time_spent || 0,
+	);
 
 	return (
 		<Link
@@ -39,8 +32,12 @@ export const TaskCard: FC<TaskCardProps> = ({ task, variant = "upcoming" }) => {
 					{task.priority}
 				</span>
 			</div>
-			<div className={styles.timeSpent}>
-				Затрачено: {formatTime(task.time_spent || 0)}
+			<div
+				className={`${styles.timeSpent} ${
+					isActiveTracking ? styles.timeSpentActive : ""
+				}`}
+			>
+				Затрачено: {formatDuration(displaySeconds)}
 			</div>
 			<div className={styles.taskFooter}>
 				<span

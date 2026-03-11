@@ -1,7 +1,8 @@
 import { FC, ReactNode, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore, authService } from "@entities/user";
+import { useAuthStore, type User, type ProfileData } from "@entities/user";
 import { useChatStore } from "@entities/chat";
+import { apiService, ApiRoute } from "@shared/api";
 import {
 	DEFAULT_HOTKEY_SETTINGS,
 	applyUserSettings,
@@ -15,8 +16,9 @@ import Loader from "@shared/ui/loader";
 
 const Layout: FC<{ children: ReactNode }> = ({ children }) => {
 	const navigate = useNavigate();
-	const { user, setUser, token: authToken } = useAuthStore();
+	const { user, setUser, token: authToken, logout } = useAuthStore();
 	const openWindow = useChatStore((state) => state.openWindow);
+	const resetChat = useChatStore((state) => state.reset);
 	const addToast = useToastStore((state) => state.addToast);
 	const [isUserInitialized, setIsUserInitialized] = useState(false);
 	const isAuthPage =
@@ -42,8 +44,10 @@ const Layout: FC<{ children: ReactNode }> = ({ children }) => {
 
 		const fetchUser = async () => {
 			try {
-				const userData = await authService.getCurrentUser();
-				const profileData = await authService.getCurrentProfile();
+				const userData = await apiService.get<User>(ApiRoute.AuthMe);
+				const profileData = await apiService.get<ProfileData>(
+					ApiRoute.ProfileMe,
+				);
 				applyUserSettings(profileData.settings);
 				setUser(userData);
 			} catch (error) {
@@ -51,7 +55,11 @@ const Layout: FC<{ children: ReactNode }> = ({ children }) => {
 					"Failed to fetch user profile, logging out.",
 					error,
 				);
-				authService.logout();
+				try {
+					resetChat();
+				} catch {}
+				logout();
+				localStorage.removeItem("refresh_token");
 				navigate("/login");
 			} finally {
 				setIsUserInitialized(true);
@@ -59,7 +67,7 @@ const Layout: FC<{ children: ReactNode }> = ({ children }) => {
 		};
 
 		void fetchUser();
-	}, [navigate, isUserInitialized, setUser]);
+	}, [logout, navigate, isUserInitialized, resetChat, setUser]);
 
 	useEffect(() => {
 		const handleHotkeys = (event: KeyboardEvent) => {
@@ -96,6 +104,12 @@ const Layout: FC<{ children: ReactNode }> = ({ children }) => {
 			if (pressed === DEFAULT_HOTKEY_SETTINGS.openChat) {
 				event.preventDefault();
 				openWindow();
+				return;
+			}
+
+			if (pressed === DEFAULT_HOTKEY_SETTINGS.openWorkspaces) {
+				event.preventDefault();
+				navigate("/workspaces");
 			}
 		};
 

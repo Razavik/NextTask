@@ -1,8 +1,8 @@
 import { FC, useState } from "react";
 import { History } from "lucide-react";
 import ConfirmModal from "@shared/ui/confirm-modal";
-import type { Task } from "@shared/types/task";
-import { tasksService } from "@entities/task";
+import type { Task, TaskTimeTrack } from "@shared/types/task";
+import { apiService, ApiRoute } from "@shared/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@entities/user";
 import {
@@ -86,7 +86,7 @@ const TaskTracker: FC<TaskTrackerProps> = ({
 
 	// Группируем треки по дням
 	const groupedTracks = timeTracks.reduce(
-		(acc, track) => {
+		(acc: Record<string, TaskTimeTrack[]>, track: TaskTimeTrack) => {
 			const date = new Date(track.created_at).toLocaleDateString(
 				"ru-RU",
 				{
@@ -99,7 +99,7 @@ const TaskTracker: FC<TaskTrackerProps> = ({
 			acc[date].push(track);
 			return acc;
 		},
-		{} as Record<string, typeof timeTracks>,
+		{} as Record<string, TaskTimeTrack[]>,
 	);
 
 	const handleSaveManualTime = () => {
@@ -149,17 +149,18 @@ const TaskTracker: FC<TaskTrackerProps> = ({
 				updateData.time_spent = newTimeSpent;
 			}
 
-			const updatedTrack = await tasksService.updateTimeTrack(
-				task.id,
-				trackId,
-				updateData,
-			);
+			const updatedTrack = await apiService.put<
+				TaskTimeTrack,
+				{ comment: string; time_spent?: number }
+			>(ApiRoute.TaskTimeTrackById, updateData, {
+				pathParams: { taskId: task.id, trackId },
+			});
 
 			// Обновляем локальный кэш
-			queryClient.setQueryData(
+			queryClient.setQueryData<TaskTimeTrack[]>(
 				["task-time-tracks", task.id],
-				(old: any[] = []) =>
-					old.map((track) =>
+				(old = []) =>
+					old.map((track: TaskTimeTrack) =>
 						track.id === trackId ? updatedTrack : track,
 					),
 			);
@@ -169,9 +170,9 @@ const TaskTracker: FC<TaskTrackerProps> = ({
 				const oldTimeSpent = parseInt(editingTimeSpent, 10);
 				const timeDiff = newTimeSpent - oldTimeSpent;
 
-				queryClient.setQueryData(
+				queryClient.setQueryData<Task | undefined>(
 					["task", workspaceId, task.id],
-					(prev: any) => {
+					(prev) => {
 						if (!prev) return prev;
 						return {
 							...prev,
@@ -222,19 +223,23 @@ const TaskTracker: FC<TaskTrackerProps> = ({
 		if (!deleteTrackId) return;
 
 		try {
-			await tasksService.deleteTimeTrack(task.id, deleteTrackId);
+			await apiService.delete(ApiRoute.TaskTimeTrackById, undefined, {
+				pathParams: { taskId: task.id, trackId: deleteTrackId },
+			});
 
 			// Обновляем локальный кэш - удаляем трек
-			queryClient.setQueryData(
+			queryClient.setQueryData<TaskTimeTrack[]>(
 				["task-time-tracks", task.id],
-				(old: any[] = []) =>
-					old.filter((track) => track.id !== deleteTrackId),
+				(old = []) =>
+					old.filter(
+						(track: TaskTimeTrack) => track.id !== deleteTrackId,
+					),
 			);
 
 			// Обновляем общее время задачи
-			queryClient.setQueryData(
+			queryClient.setQueryData<Task | undefined>(
 				["task", workspaceId, task.id],
-				(prev: any) => {
+				(prev) => {
 					if (!prev) return prev;
 					return {
 						...prev,
@@ -323,53 +328,45 @@ const TaskTracker: FC<TaskTrackerProps> = ({
 						</div>
 					) : (
 						<div className={styles.historyList}>
-							{Object.entries(groupedTracks).map(
-								([date, tracks]) => (
-									<div
-										key={date}
-										className={styles.historyDay}
-									>
-										<div className={styles.dayDate}>
-											{date}
-										</div>
-										{tracks.map((track) => (
-											<TrackItem
-												key={track.id}
-												track={track}
-												currentUser={currentUser}
-												editingTrackId={editingTrackId}
-												editingComment={editingComment}
-												editingHours={editingHours}
-												editingMinutes={editingMinutes}
-												editingSeconds={editingSeconds}
-												setEditingComment={
-													setEditingComment
-												}
-												setEditingHours={
-													setEditingHours
-												}
-												setEditingMinutes={
-													setEditingMinutes
-												}
-												setEditingSeconds={
-													setEditingSeconds
-												}
-												handleSaveEdit={handleSaveEdit}
-												handleCancelEdit={
-													handleCancelEdit
-												}
-												handleEditTrack={
-													handleEditTrack
-												}
-												handleDeleteTrack={
-													handleDeleteTrack
-												}
-												formatTime={formatTime}
-											/>
-										))}
-									</div>
-								),
-							)}
+							{(
+								Object.entries(groupedTracks) as [
+									string,
+									TaskTimeTrack[],
+								][]
+							).map(([date, tracks]) => (
+								<div key={date} className={styles.historyDay}>
+									<div className={styles.dayDate}>{date}</div>
+									{tracks.map((track) => (
+										<TrackItem
+											key={track.id}
+											track={track}
+											currentUser={currentUser}
+											editingTrackId={editingTrackId}
+											editingComment={editingComment}
+											editingHours={editingHours}
+											editingMinutes={editingMinutes}
+											editingSeconds={editingSeconds}
+											setEditingComment={
+												setEditingComment
+											}
+											setEditingHours={setEditingHours}
+											setEditingMinutes={
+												setEditingMinutes
+											}
+											setEditingSeconds={
+												setEditingSeconds
+											}
+											handleSaveEdit={handleSaveEdit}
+											handleCancelEdit={handleCancelEdit}
+											handleEditTrack={handleEditTrack}
+											handleDeleteTrack={
+												handleDeleteTrack
+											}
+											formatTime={formatTime}
+										/>
+									))}
+								</div>
+							))}
 						</div>
 					)}
 				</div>

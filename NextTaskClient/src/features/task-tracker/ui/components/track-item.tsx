@@ -8,7 +8,15 @@ import type { TaskTimeTrack } from "@shared/types/task";
 
 interface TrackItemProps {
 	track: TaskTimeTrack;
-	currentUser: any;
+	currentUser:
+		| {
+				id: number;
+				name?: string | null;
+				email: string;
+				avatar?: string | null;
+		  }
+		| null
+		| undefined;
 	editingTrackId: number | null;
 	editingComment: string;
 	editingHours: string;

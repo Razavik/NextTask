@@ -25,7 +25,7 @@ import {
 } from "../../model/types";
 import KanbanCard from "../kanban-card";
 import Button from "@shared/ui/button";
-import { tasksService } from "@entities/task";
+import { apiService, ApiRoute } from "@shared/api";
 import styles from "./index.module.css";
 
 interface KanbanBoardProps {
@@ -258,9 +258,15 @@ const KanbanBoard: FC<KanbanBoardProps> = ({
 
 		try {
 			// Оптимистично оставляем localTasks как есть (оно уже обновлено в handleDragOver)
-			await tasksService.updateTask(draggedTask.id, {
-				status: targetStatus,
-			});
+			await apiService.put(
+				ApiRoute.TaskById,
+				{
+					status: targetStatus,
+				},
+				{
+					pathParams: { taskId: draggedTask.id },
+				},
+			);
 
 			// Инвалидируем кэш задач пользователя для обновления карточек дедлайнов
 			queryClient.invalidateQueries({ queryKey: ["my-tasks"] });

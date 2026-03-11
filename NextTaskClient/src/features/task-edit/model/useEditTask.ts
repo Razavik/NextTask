@@ -5,7 +5,7 @@ import {
 	createSuccessToast,
 } from "@shared/model/toastStore";
 import { useWorkspaceMembersQuery } from "@entities/workspace";
-import { tasksService } from "@entities/task";
+import { apiService, ApiRoute } from "@shared/api";
 import type { Task } from "@shared/types/task";
 import { toLocalISOString } from "@shared/lib/date";
 import { useQueryClient } from "@tanstack/react-query";
@@ -103,7 +103,9 @@ export const useEditTask = ({
 				assignees_ids: Array.from(new Set(assigneeIds)),
 			};
 
-			await tasksService.updateTask(task.id, payload);
+			await apiService.put(ApiRoute.TaskById, payload, {
+				pathParams: { taskId: task.id },
+			});
 			addToast(
 				createSuccessToast(
 					"Задача обновлена",
@@ -136,7 +138,9 @@ export const useEditTask = ({
 		if (isLoading) return;
 		setIsLoading(true);
 		try {
-			await tasksService.deleteTask(task.id);
+			await apiService.delete(ApiRoute.TaskById, undefined, {
+				pathParams: { taskId: task.id },
+			});
 			addToast(createSuccessToast("Задача удалена"));
 
 			// Инвалидируем кэш задач пользователя для обновления карточек дедлайнов

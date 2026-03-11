@@ -16,11 +16,11 @@ import { useChatRealtime } from "@widgets/chat/model/useChatRealtime";
 import { useChatDedup } from "@widgets/chat/model/useChatDedup";
 import { useChatSend } from "@widgets/chat/model/useChatSend";
 import CreateGroupModal from "./components/create-group-modal";
-import api from "@shared/api/axios";
+import ConfirmModal from "@shared/ui/confirm-modal";
+import { apiService, ApiRoute } from "@shared/api";
 
 import { useChatStore } from "@entities/chat";
 import { useAuthStore } from "@entities/user";
-import { useToastStore } from "@shared/model/toastStore";
 
 const Chat: FC = () => {
 	const {
@@ -36,8 +36,6 @@ const Chat: FC = () => {
 		upsertAndTouchContact,
 		setContactsOrder,
 		clearUnread,
-		incrementUnread,
-		openWindow,
 		setCurrentWorkspaceId,
 	} = useChatStore();
 
@@ -48,7 +46,6 @@ const Chat: FC = () => {
 
 	// Отладка
 	const currentUser = useAuthStore((state) => state.user);
-	const addToast = useToastStore((state) => state.addToast);
 
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -60,6 +57,10 @@ const Chat: FC = () => {
 		null,
 	);
 	const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
+	const [typingState, setTypingState] = useState<
+		Record<string, { name?: string; isTyping: boolean }>
+	>({});
+	const [onlineUserIds, setOnlineUserIds] = useState<Set<number>>(new Set());
 
 	// Автоматически переключаем на "Все" если фильтры скрыты
 	useEffect(() => {
@@ -157,16 +158,46 @@ const Chat: FC = () => {
 		height: 600,
 	});
 
-	const { messages, setMessages, isLoading } = useChatHistory({
+	const {
+		messages,
+		setMessages,
+		pinnedMessage,
+		setPinnedMessage,
+		isLoading,
+		isLoadingMore,
+		isLoadingMoreBottom,
+		hasMore,
+		hasMoreBottom,
+		isJumped,
+		loadMoreMessages,
+		loadMoreMessagesBottom,
+		jumpToMessage,
+		resetJump,
+	} = useChatHistory({
 		activeChat,
 		activeChatRef,
+		currentUserId: currentUser?.id,
 	});
 
 	// Автоскролл к последнему сообщению
 	useEffect(() => {
-		// Если мы только что загрузили историю, скроллим мгновенно (auto), иначе плавно (smooth)
+		if (isJumped) return;
 		messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-	}, [messages, isLoading]);
+	}, [isLoading, isJumped]);
+
+	useChatRealtime({
+		activeChat,
+		activeChatRef,
+		isOpenRef,
+		currentUserId: currentUser?.id,
+		shouldAcceptMessage,
+		setMessages,
+		setPinnedMessage,
+		clearUnread,
+		upsertAndTouchContact,
+		setTypingState,
+		setOnlineUserIds,
+	});
 
 	useChatContacts({
 		addContacts,
@@ -188,19 +219,20 @@ const Chat: FC = () => {
 		}
 	}, [shouldExpand, ackExpand]);
 
+	const isOpenRefLocal = useRef(true);
+
 	useChatRealtime({
 		activeChat,
 		activeChatRef,
-		isOpenRef,
+		isOpenRef: isOpenRefLocal,
 		currentUserId: currentUser?.id,
 		shouldAcceptMessage,
 		setMessages,
+		setPinnedMessage,
 		clearUnread,
-		incrementUnread,
-		addToast,
-		setActiveChat,
-		openWindow,
 		upsertAndTouchContact,
+		setTypingState,
+		setOnlineUserIds,
 	});
 
 	// Появление (mount) с плавной анимацией
@@ -226,6 +258,10 @@ const Chat: FC = () => {
 		handleCancelReply,
 		handleTogglePin,
 		handleDelete,
+		handleCancelDelete,
+		handleConfirmDelete,
+		deleteTarget,
+		isDeleting,
 		handleUpload,
 		removeAttachment,
 	} = useChatSend({
@@ -264,7 +300,13 @@ const Chat: FC = () => {
 
 	const handleCreateGroup = async (name: string, userIds: number[]) => {
 		try {
-			const { data } = await api.post("/chat/group", {
+			const data = await apiService.post<
+				{ id: number; name: string },
+				{
+					name: string;
+					user_ids: number[];
+				}
+			>(ApiRoute.GroupChatCreate, {
 				name,
 				user_ids: userIds,
 			});
@@ -312,6 +354,18 @@ const Chat: FC = () => {
 								}
 							: null
 					}
+					isOnline={
+						activeChat?.type === "personal" &&
+						typeof activeChat.userId === "number"
+							? onlineUserIds.has(activeChat.userId)
+							: false
+					}
+					isTyping={
+						activeChat
+							? (typingState[activeChat.contactId]?.isTyping ??
+								false)
+							: false
+					}
 					isSidebarCollapsed={isSidebarCollapsed}
 					onToggleSidebar={() =>
 						setIsSidebarCollapsed(!isSidebarCollapsed)
@@ -356,6 +410,7 @@ const Chat: FC = () => {
 									<>
 										<Messages
 											messages={messages}
+											pinnedMessage={pinnedMessage}
 											isLoading={isLoading}
 											currentUserId={currentUser?.id}
 											activeChat={
@@ -371,6 +426,19 @@ const Chat: FC = () => {
 											onDelete={handleDelete}
 											onReply={handleReply}
 											onTogglePin={handleTogglePin}
+											onLoadMore={loadMoreMessages}
+											onLoadMoreBottom={
+												loadMoreMessagesBottom
+											}
+											onJumpToMessage={jumpToMessage}
+											onResetJump={resetJump}
+											isLoadingMore={isLoadingMore}
+											isLoadingMoreBottom={
+												isLoadingMoreBottom
+											}
+											hasMore={hasMore}
+											hasMoreBottom={hasMoreBottom}
+											isJumped={isJumped}
 										/>
 										<Input
 											value={newMessage}
@@ -429,6 +497,7 @@ const Chat: FC = () => {
 									<>
 										<Messages
 											messages={messages}
+											pinnedMessage={pinnedMessage}
 											isLoading={isLoading}
 											currentUserId={currentUser?.id}
 											activeChat={
@@ -444,6 +513,19 @@ const Chat: FC = () => {
 											onDelete={handleDelete}
 											onReply={handleReply}
 											onTogglePin={handleTogglePin}
+											onLoadMore={loadMoreMessages}
+											onLoadMoreBottom={
+												loadMoreMessagesBottom
+											}
+											onJumpToMessage={jumpToMessage}
+											onResetJump={resetJump}
+											isLoadingMore={isLoadingMore}
+											isLoadingMoreBottom={
+												isLoadingMoreBottom
+											}
+											hasMore={hasMore}
+											hasMoreBottom={hasMoreBottom}
+											isJumped={isJumped}
 										/>
 										<Input
 											value={newMessage}
@@ -481,6 +563,17 @@ const Chat: FC = () => {
 					onCreate={handleCreateGroup}
 				/>
 			)}
+			<ConfirmModal
+				open={!!deleteTarget}
+				title="Удалить сообщение"
+				message="Вы уверены, что хотите удалить это сообщение? Это действие нельзя отменить."
+				confirmLabel="Удалить"
+				cancelLabel="Отмена"
+				variant="danger"
+				loading={isDeleting}
+				onConfirm={() => void handleConfirmDelete()}
+				onCancel={handleCancelDelete}
+			/>
 		</>,
 		document.body,
 	);

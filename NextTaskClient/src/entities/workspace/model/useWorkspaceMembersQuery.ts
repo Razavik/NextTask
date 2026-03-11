@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { workspacesService } from "./workspaces.service";
+import { apiService, ApiRoute } from "@shared/api";
 import type { WorkspaceMember } from "@shared/types/workspace";
 
 /**
@@ -12,7 +12,12 @@ export const useWorkspaceMembersQuery = (workspaceId?: number) => {
 		queryKey: ["workspace", workspaceId, "members"],
 		queryFn: () => {
 			if (!workspaceId) return Promise.resolve([]);
-			return workspacesService.fetchWorkspaceUsers(workspaceId);
+			return apiService.get<WorkspaceMember[]>(
+				ApiRoute.WorkspaceMembers,
+				{
+					pathParams: { workspaceId },
+				},
+			);
 		},
 		enabled: !!workspaceId,
 		staleTime: 1000 * 60, // 1 мин — можно настроить позже

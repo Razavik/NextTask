@@ -1,10 +1,11 @@
-﻿import { FC } from "react";
+import { FC } from "react";
 import { useChatStore } from "@entities/chat";
 import AssigneeMultiSelect from "@shared/ui/assignee-multi-select";
 import Button from "@shared/ui/button";
 import styles from "./index.module.css";
 import type { Task } from "@shared/types/task";
 import { MessageCircle } from "lucide-react";
+import { formatDuration } from "@shared/lib/time";
 import { useTaskSidebar, type Member } from "../model/useTaskSidebar";
 
 interface TaskSidebarProps {
@@ -14,19 +15,6 @@ interface TaskSidebarProps {
 	canManageAssignees: boolean;
 	onTaskUpdated?: (task: Task) => void;
 }
-
-const formatTime = (seconds: number): string => {
-	const pad = (num: number) => num.toString().padStart(2, "0");
-	if (seconds >= 3600) {
-		const h = Math.floor(seconds / 3600);
-		const m = Math.floor((seconds % 3600) / 60);
-		const s = seconds % 60;
-		return `${pad(h)}:${pad(m)}:${pad(s)}`;
-	}
-	const m = Math.floor(seconds / 60);
-	const s = seconds % 60;
-	return `${pad(m)}:${pad(s)}`;
-};
 
 const TaskSidebar: FC<TaskSidebarProps> = ({
 	task,
@@ -83,11 +71,9 @@ const TaskSidebar: FC<TaskSidebarProps> = ({
 					</span>
 				</div>
 				<div className={styles.row}>
-					<span className={styles.label}>
-						Затрачено времени
-					</span>
+					<span className={styles.label}>Затрачено времени</span>
 					<span className={styles.value}>
-						{formatTime(task.time_spent || 0)}
+						{formatDuration(task.time_spent || 0)}
 					</span>
 				</div>
 				{task.due_date && (

@@ -15,6 +15,8 @@ export interface ChatHeaderProps {
 		name: string;
 		avatar?: string;
 	} | null;
+	isOnline?: boolean;
+	isTyping?: boolean;
 	isSidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	onClose: () => void;
@@ -25,6 +27,8 @@ export interface ChatHeaderProps {
 
 const Header: FC<ChatHeaderProps> = ({
 	activeChat,
+	isOnline,
+	isTyping,
 	isSidebarCollapsed,
 	onToggleSidebar,
 	onClose,
@@ -69,9 +73,13 @@ const Header: FC<ChatHeaderProps> = ({
 					</div>
 					<div className={styles.recipientStatus}>
 						{activeChat
-							? activeChat.type === "group"
-								? "Групповой чат"
-								: "Личный чат"
+							? isTyping
+								? "Печатает..."
+								: activeChat.type === "group"
+									? "Групповой чат"
+									: isOnline
+										? "В сети"
+										: "Не в сети"
 							: ""}
 					</div>
 				</div>

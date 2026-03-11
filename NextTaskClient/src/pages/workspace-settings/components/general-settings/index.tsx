@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Button from "@shared/ui/button";
 import Input from "@shared/ui/input";
 import { Workspace, WorkspaceSettingsForm } from "@shared/types/workspace";
-import { workspacesService } from "@entities/workspace";
+import { apiService, ApiRoute } from "@shared/api";
 import styles from "./index.module.css";
 import { useAuthStore } from "@entities/user";
 import {
@@ -44,7 +44,11 @@ const GeneralSettings: FC<GeneralSettingsProps> = ({
 	const updateWorkspaceMutation = useMutation({
 		mutationFn: async (data: WorkspaceSettingsForm) => {
 			try {
-				await workspacesService.updateWorkspace(workspace.id, data);
+				await apiService.put<Workspace, WorkspaceSettingsForm>(
+					ApiRoute.WorkspaceById,
+					data,
+					{ pathParams: { workspaceId: workspace.id } },
+				);
 				queryClient.invalidateQueries({
 					queryKey: ["workspace", workspace.id],
 				});
@@ -62,7 +66,10 @@ const GeneralSettings: FC<GeneralSettingsProps> = ({
 
 	// Мутация для удаления рабочего пространства (для владельца)
 	const deleteWorkspaceMutation = useMutation({
-		mutationFn: () => workspacesService.deleteWorkspace(workspace.id),
+		mutationFn: () =>
+			apiService.delete<void>(ApiRoute.WorkspaceById, undefined, {
+				pathParams: { workspaceId: workspace.id },
+			}),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["workspaces"] });
 			onDelete(); // Вызываем callback для навигации
@@ -84,7 +91,16 @@ const GeneralSettings: FC<GeneralSettingsProps> = ({
 		mutationFn: async () => {
 			if (!currentUserId)
 				throw new Error("Не удалось определить пользователя");
-			return workspacesService.removeUser(workspace.id, currentUserId);
+			return apiService.delete<{ message: string }>(
+				ApiRoute.WorkspaceMemberById,
+				undefined,
+				{
+					pathParams: {
+						workspaceId: workspace.id,
+						userId: currentUserId,
+					},
+				},
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["workspaces"] });

@@ -1,5 +1,5 @@
 ﻿import { FC, useMemo, useState, useEffect } from "react";
-import { tasksService } from "@entities/task";
+import { apiService, ApiRoute } from "@shared/api";
 import type { CreateTaskRequest } from "@shared/types/task";
 import Input from "@shared/ui/input";
 import Dropdown from "@shared/ui/dropdown";
@@ -95,8 +95,9 @@ const CreateTaskModal: FC<CreateTaskModalProps> = ({
 				? `${newTask.due_date}:00`
 				: newTask.due_date;
 
-		await tasksService.createTask(workspaceId, {
+		await apiService.post(ApiRoute.Tasks, {
 			...newTask,
+			workspace_id: workspaceId,
 			due_date: normalizedDue,
 			assignees_ids: assigneeIds,
 		});

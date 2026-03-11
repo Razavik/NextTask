@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { authService } from "@entities/user";
+import { apiService, ApiRoute } from "@shared/api";
 import Input from "@shared/ui/input";
 import Button from "@shared/ui/button";
 import styles from "../index.module.css";
@@ -44,7 +44,10 @@ const Register = () => {
 			return;
 		}
 		try {
-			await authService.register({ name, email, password });
+			await apiService.post<
+				{ id?: number },
+				{ name: string; email: string; password: string }
+			>(ApiRoute.AuthRegister, { name, email, password });
 			navigate("/login");
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Ошибка регистрации");

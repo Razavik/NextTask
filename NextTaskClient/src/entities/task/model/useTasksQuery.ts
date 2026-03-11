@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { tasksService } from "./tasks.service";
-import type { Task } from "@shared/types/task";
+import { apiService, ApiRoute } from "@shared/api";
+import type { Task, TasksResponse } from "@shared/types/task";
 
 export function useTasksQuery(workspaceId?: number) {
 	return useQuery<Task[], Error>({
@@ -8,7 +8,13 @@ export function useTasksQuery(workspaceId?: number) {
 		queryFn: async () => {
 			if (!workspaceId) return [];
 			try {
-				return await tasksService.fetchTasks(workspaceId);
+				const response = await apiService.get<TasksResponse>(
+					`${ApiRoute.WorkspaceById}/tasks`,
+					{
+						pathParams: { workspaceId },
+					},
+				);
+				return response.tasks;
 			} catch (error) {
 				console.error("Failed to fetch tasks:", error);
 				return [];

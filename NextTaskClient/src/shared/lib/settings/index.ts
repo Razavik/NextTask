@@ -14,6 +14,7 @@ export interface PersistedUserSettings {
 		openProfile: string;
 		openPlanning: string;
 		openChat: string;
+		openWorkspaces: string;
 	};
 }
 
@@ -23,10 +24,11 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettingsState = {
 };
 
 export const DEFAULT_HOTKEY_SETTINGS = {
-	openSettings: "Ctrl+Shift+/",
-	openProfile: "Ctrl+Shift+P",
-	openPlanning: "Ctrl+Shift+L",
-	openChat: "Ctrl+Shift+C",
+	openSettings: "Ctrl+Alt+S",
+	openProfile: "Ctrl+Alt+P",
+	openPlanning: "Ctrl+Alt+L",
+	openChat: "Ctrl+Alt+C",
+	openWorkspaces: "Ctrl+Alt+W",
 };
 
 export const DEFAULT_USER_SETTINGS: PersistedUserSettings = {

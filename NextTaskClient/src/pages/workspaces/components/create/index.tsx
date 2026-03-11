@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { workspacesService } from "@entities/workspace";
+import { apiService, ApiRoute } from "@shared/api";
+import type { Workspace } from "@shared/types/workspace";
 import styles from "./index.module.css";
 import Button from "@shared/ui/button";
 import Input from "@shared/ui/input";
@@ -20,7 +21,10 @@ const CreateWorkspace: FC = () => {
 
 		try {
 			setLoading(true);
-			const workspace = await workspacesService.createWorkspace({
+			const workspace = await apiService.post<
+				Workspace,
+				{ name: string; description?: string }
+			>(ApiRoute.Workspaces, {
 				name: name.trim(),
 				description: description || undefined,
 			});

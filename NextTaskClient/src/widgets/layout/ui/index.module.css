@@ -13,6 +13,13 @@
 	height: 100vh;
 }
 
+@media (max-width: 480px) {
+	.mainContent {
+		padding: 12px;
+		padding-bottom: 80px;
+	}
+}
+
 /* Регистрация анимируемых custom properties для позиций сфер */
 @property --orb1-x {
 	syntax: "<percentage>";

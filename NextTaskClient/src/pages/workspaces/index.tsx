@@ -1,9 +1,11 @@
 ﻿import { FC, useState } from "react";
 import { ListTodo, Building2, Plus } from "lucide-react";
 import { useAuthStore } from "@entities/user";
-import { useWorkspacesQuery, workspacesService } from "@entities/workspace";
+import { useWorkspacesQuery } from "@entities/workspace";
 import { useMyTasksQuery } from "@entities/task";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiService, ApiRoute } from "@shared/api";
+import type { Workspace } from "@shared/types/workspace";
 import styles from "./index.module.css";
 import Loader from "@shared/ui/loader";
 import StatCard from "@shared/ui/stat-card";
@@ -43,7 +45,10 @@ const Workspaces: FC = () => {
 
 	const createMutation = useMutation({
 		mutationFn: (data: { name: string; description?: string }) =>
-			workspacesService.createWorkspace(data),
+			apiService.post<Workspace, { name: string; description?: string }>(
+				ApiRoute.Workspaces,
+				data,
+			),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["workspaces"] });
 			setName("");

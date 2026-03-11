@@ -1,4 +1,4 @@
-import { FC, useState, useRef, useEffect } from "react";
+import { FC, useState, useRef, useEffect, useLayoutEffect } from "react";
 import { MoreVertical } from "lucide-react";
 import styles from "./index.module.css";
 
@@ -25,7 +25,9 @@ const ContextMenu: FC<ContextMenuProps> = ({
 	onOpenChange,
 }) => {
 	const [internalIsOpen, setInternalIsOpen] = useState(false);
+	const [openUpward, setOpenUpward] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
+	const menuContainerRef = useRef<HTMLDivElement>(null);
 	const isControlled = controlledIsOpen !== undefined;
 	const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
 
@@ -61,6 +63,42 @@ const ContextMenu: FC<ContextMenuProps> = ({
 		};
 	}, []);
 
+	useLayoutEffect(() => {
+		if (!isOpen || !menuRef.current || !menuContainerRef.current) {
+			return;
+		}
+
+		const wrapperRect = menuRef.current.getBoundingClientRect();
+		const menuRect = menuContainerRef.current.getBoundingClientRect();
+
+		// Ищем ближайший контейнер с overflow
+		let scrollContainer: HTMLElement | null = menuRef.current.parentElement;
+		while (scrollContainer && scrollContainer !== document.body) {
+			const style = window.getComputedStyle(scrollContainer);
+			if (
+				style.overflowY === "auto" ||
+				style.overflowY === "scroll" ||
+				style.overflow === "hidden" ||
+				style.overflow === "auto"
+			) {
+				break;
+			}
+			scrollContainer = scrollContainer.parentElement;
+		}
+
+		const containerRect = scrollContainer
+			? scrollContainer.getBoundingClientRect()
+			: { top: 0, bottom: window.innerHeight };
+
+		const spaceBelow = containerRect.bottom - wrapperRect.bottom;
+		const spaceAbove = wrapperRect.top - containerRect.top;
+
+		const needOpenDownward =
+			spaceAbove < menuRect.height + 8 && spaceBelow > spaceAbove;
+
+		setOpenUpward(!needOpenDownward);
+	}, [isOpen, options.length]);
+
 	const handleOptionClick = (optionValue: string) => {
 		onSelect(optionValue);
 		setIsOpen(false);
@@ -81,7 +119,12 @@ const ContextMenu: FC<ContextMenuProps> = ({
 				{children || <MoreVertical size={8} />}
 			</div>
 			{isOpen && (
-				<div className={styles.menuContainer}>
+				<div
+					ref={menuContainerRef}
+					className={`${styles.menuContainer} ${
+						openUpward ? styles.openUpward : ""
+					}`}
+				>
 					<ul className={styles.menuList}>
 						{options.map((option) => (
 							<li

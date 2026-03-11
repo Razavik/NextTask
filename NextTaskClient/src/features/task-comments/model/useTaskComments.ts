@@ -5,8 +5,12 @@ import {
 	createErrorToast,
 	createSuccessToast,
 } from "@shared/model/toastStore";
-import { commentsService } from "@entities/comment";
-import type { CommentItem } from "@shared/types/comment";
+import { apiService, ApiRoute } from "@shared/api";
+import type {
+	CommentItem,
+	CommentsQuery,
+	CreateCommentRequest,
+} from "@shared/types/comment";
 
 export type TaskComment = CommentItem & {
 	author: {
@@ -82,9 +86,16 @@ export const useTaskComments = (taskId: number) => {
 		}
 		try {
 			setEditingLoading(true);
-			const updated = await commentsService.update(editingId, {
-				content: value,
-			});
+			const updated = await apiService.patch<
+				CommentItem,
+				{ content: string }
+			>(
+				ApiRoute.CommentById,
+				{ content: value },
+				{
+					pathParams: { commentId: editingId },
+				},
+			);
 			setComments((prev) =>
 				prev.map((c) =>
 					c.id === editingId ? { ...c, content: updated.content } : c,
@@ -119,11 +130,16 @@ export const useTaskComments = (taskId: number) => {
 			try {
 				setIsLoading(true);
 				const [count, data] = await Promise.all([
-					commentsService.countByTask(taskId),
-					commentsService.fetchByTask(taskId, {
-						limit: PAGE_INITIAL,
-						offset: 0,
-						order: "desc",
+					apiService.get<number>(ApiRoute.TaskCommentsCount, {
+						pathParams: { taskId },
+					}),
+					apiService.get<CommentItem[]>(ApiRoute.TaskComments, {
+						pathParams: { taskId },
+						query: {
+							limit: PAGE_INITIAL,
+							offset: 0,
+							order: "desc",
+						} satisfies CommentsQuery,
 					}),
 				]);
 				if (!mounted) return;
@@ -148,11 +164,17 @@ export const useTaskComments = (taskId: number) => {
 		if (isMoreLoading || !hasMore) return;
 		try {
 			setIsMoreLoading(true);
-			const data = await commentsService.fetchByTask(taskId, {
-				limit: PAGE_MORE,
-				offset: loadedDescCount,
-				order: "desc",
-			});
+			const data = await apiService.get<CommentItem[]>(
+				ApiRoute.TaskComments,
+				{
+					pathParams: { taskId },
+					query: {
+						limit: PAGE_MORE,
+						offset: loadedDescCount,
+						order: "desc",
+					} satisfies CommentsQuery,
+				},
+			);
 			const normalizedDesc = data.map(normalizeComment);
 			const ascBatch = [...normalizedDesc].reverse();
 			setComments((prev) => [...ascBatch, ...prev]);
@@ -187,9 +209,16 @@ export const useTaskComments = (taskId: number) => {
 
 		setIsSubmitting(true);
 		try {
-			const created = await commentsService.create(taskId, {
-				content: newComment.trim(),
-			});
+			const created = await apiService.post<
+				CommentItem,
+				CreateCommentRequest
+			>(
+				ApiRoute.TaskComments,
+				{ content: newComment.trim() },
+				{
+					pathParams: { taskId },
+				},
+			);
 			const withAuthor: TaskComment = {
 				...created,
 				author: {
@@ -217,7 +246,9 @@ export const useTaskComments = (taskId: number) => {
 		if (deletingId == null) return;
 		try {
 			setDeletingLoading(true);
-			await commentsService.delete(deletingId);
+			await apiService.delete(ApiRoute.CommentById, undefined, {
+				pathParams: { commentId: deletingId },
+			});
 			setComments((prev) => prev.filter((c) => c.id !== deletingId));
 			setLoadedDescCount((prev) => Math.max(0, prev - 1));
 			setTotalCount((prev) => (prev == null ? 0 : Math.max(0, prev - 1)));

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { chatService, type ChatContact } from "@entities/chat";
+import { type ChatContact } from "@entities/chat";
+import { apiService, ApiRoute } from "@shared/api";
 
 interface UseChatContactsOptions {
 	addContacts: (contacts: ChatContact[]) => void;
@@ -20,8 +21,10 @@ export const useChatContacts = ({
 				// Загружаем разные данные в зависимости от scope
 				const recent =
 					scope === "all"
-						? await chatService.getAll()
-						: await chatService.getRecent();
+						? await apiService.get<ChatContact[]>(ApiRoute.ChatAll)
+						: await apiService.get<ChatContact[]>(
+								ApiRoute.ChatRecent,
+							);
 
 				if (cancelled || !Array.isArray(recent)) return;
 				const contactsToAdd: ChatContact[] = recent.map((r: any) => ({

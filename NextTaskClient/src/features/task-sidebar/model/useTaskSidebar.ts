@@ -5,7 +5,7 @@ import {
 	createErrorToast,
 	createSuccessToast,
 } from "@shared/model/toastStore";
-import { tasksService } from "@entities/task";
+import { apiService, ApiRoute } from "@shared/api";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Task } from "@shared/types/task";
 
@@ -143,9 +143,15 @@ export const useTaskSidebar = ({
 					),
 				),
 			);
-			const response = await tasksService.setTaskAssignees(
-				task.id,
-				normalizedIds,
+			const response = await apiService.post<
+				Task,
+				{ assignees_ids: number[] }
+			>(
+				ApiRoute.TaskAssignees,
+				{ assignees_ids: normalizedIds },
+				{
+					pathParams: { taskId: task.id },
+				},
 			);
 			queryClient.setQueryData<Task | undefined>(
 				["task", workspaceId, task.id],
@@ -177,9 +183,18 @@ export const useTaskSidebar = ({
 	const handleSaveTime = useCallback(
 		async (timeSpent: number) => {
 			try {
-				const response = await tasksService.updateTask(task.id, {
-					time_spent: timeSpent,
-				});
+				const response = await apiService.put<
+					Task,
+					{ time_spent: number }
+				>(
+					ApiRoute.TaskById,
+					{
+						time_spent: timeSpent,
+					},
+					{
+						pathParams: { taskId: task.id },
+					},
+				);
 				queryClient.setQueryData<Task | undefined>(
 					["task", workspaceId, task.id],
 					(prev) => (prev ? { ...prev, ...response } : response),

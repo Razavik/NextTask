@@ -14,7 +14,7 @@ import {
 	useWorkspaceMembersQuery,
 	useWorkspaceQuery,
 } from "@entities/workspace";
-import { tasksService } from "@entities/task";
+import { apiService, ApiRoute } from "@shared/api";
 import Loader from "@shared/ui/loader";
 import Button from "@shared/ui/button";
 import Textarea from "@shared/ui/textarea";
@@ -22,6 +22,7 @@ import NotFoundCard from "@shared/ui/not-found-card";
 import { TaskComments } from "@features/task-comments";
 import { TaskSidebar } from "@features/task-sidebar";
 import { TaskTracker } from "@features/task-tracker";
+import type { Task, UpdateTaskRequest } from "@shared/types/task";
 
 import styles from "./index.module.css";
 
@@ -42,9 +43,12 @@ const TaskPage = () => {
 		data: task,
 		isLoading,
 		isError,
-	} = useQuery({
+	} = useQuery<Task>({
 		queryKey: ["task", wid, tid],
-		queryFn: () => tasksService.fetchTask(tid),
+		queryFn: () =>
+			apiService.get<Task>(ApiRoute.TaskById, {
+				pathParams: { taskId: tid },
+			}),
 		enabled: Number.isFinite(wid) && Number.isFinite(tid),
 	});
 
@@ -68,7 +72,7 @@ const TaskPage = () => {
 		setActiveMobileTab(activeDesktopTab);
 	}, [activeDesktopTab]);
 
-	const handleTaskUpdated = (updatedTask: any) => {
+	const handleTaskUpdated = (updatedTask: Task) => {
 		queryClient.setQueryData(["task", wid, tid], updatedTask);
 	};
 
@@ -82,7 +86,13 @@ const TaskPage = () => {
 
 	const { mutate: saveContent, isPending: isSaving } = useMutation({
 		mutationFn: (value: string) =>
-			tasksService.updateTask(tid, { content: value }),
+			apiService.put<Task, UpdateTaskRequest>(
+				ApiRoute.TaskById,
+				{ content: value },
+				{
+					pathParams: { taskId: tid },
+				},
+			),
 		onSuccess: (updated) => {
 			queryClient.setQueryData(["task", wid, tid], updated);
 			useToastStore.getState().addToast(createSuccessToast("Сохранено"));
@@ -94,18 +104,37 @@ const TaskPage = () => {
 		},
 	});
 
-	const { mutate: completeTask, isPending: isCompleting } = useMutation({
-		mutationFn: () => tasksService.updateTask(tid, { status: "done" }),
+	const invalidateTaskQueries = (updated: Task) => {
+		queryClient.setQueryData(["task", wid, tid], updated);
+		void queryClient.invalidateQueries({ queryKey: ["tasks", wid] });
+		void queryClient.invalidateQueries({ queryKey: ["my-tasks"] });
+	};
+
+	const { mutate: updateTaskStatus, isPending: isCompleting } = useMutation({
+		mutationFn: (status: UpdateTaskRequest["status"]) =>
+			apiService.put<Task, UpdateTaskRequest>(
+				ApiRoute.TaskById,
+				{ status },
+				{
+					pathParams: { taskId: tid },
+				},
+			),
 		onSuccess: (updated) => {
-			queryClient.setQueryData(["task", wid, tid], updated);
+			invalidateTaskQueries(updated);
 			useToastStore
 				.getState()
-				.addToast(createSuccessToast("Задача завершена"));
+				.addToast(
+					createSuccessToast(
+						updated.status === "done"
+							? "Задача завершена"
+							: "Задача возвращена в работу",
+					),
+				);
 		},
 		onError: () => {
 			useToastStore
 				.getState()
-				.addToast(createErrorToast("Ошибка завершения задачи"));
+				.addToast(createErrorToast("Ошибка обновления статуса задачи"));
 		},
 	});
 
@@ -138,17 +167,24 @@ const TaskPage = () => {
 				onBack={() => navigate(`/workspaces/workspace/${workspaceId}`)}
 				backTitle="Назад к пространству"
 				rightElement={
-					task.status !== "done" &&
 					!isReader && (
 						<Button
 							variant="primary"
 							size="sm"
-							onClick={() => completeTask()}
+							onClick={() =>
+								updateTaskStatus(
+									task.status === "done"
+										? "progress"
+										: "done",
+								)
+							}
 							disabled={isCompleting}
 						>
 							{isCompleting
-								? "Завершение..."
-								: "Завершить задачу"}
+								? "Сохранение..."
+								: task.status === "done"
+									? "Вернуть задачу"
+									: "Завершить задачу"}
 						</Button>
 					)
 				}

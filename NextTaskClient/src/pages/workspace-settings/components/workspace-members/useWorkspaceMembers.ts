@@ -9,8 +9,8 @@ import {
 import {
 	useWorkspaceMembersQuery,
 	useInvalidateWorkspaceMembers,
-	workspacesService,
 } from "@entities/workspace";
+import { apiService, ApiRoute } from "@shared/api";
 import type { WorkspaceMember } from "@shared/types/workspace";
 import { type WorkspaceRole, WORKSPACE_ROLE_LABELS } from "@shared/types/roles";
 
@@ -54,9 +54,11 @@ export const useWorkspaceMembers = (workspaceId: number) => {
 
 		setIsInviting(true);
 		try {
-			await workspacesService.inviteUser(workspaceId, {
-				email: inviteEmail.trim(),
-			});
+			await apiService.post<{ message?: string }, { email: string }>(
+				ApiRoute.WorkspaceEmailInvites,
+				{ email: inviteEmail.trim() },
+				{ pathParams: { workspaceId } },
+			);
 			addToast(
 				createSuccessToast(
 					"Приглашение отправлено",
@@ -92,10 +94,15 @@ export const useWorkspaceMembers = (workspaceId: number) => {
 				? WORKSPACE_ROLE_LABELS[prevRole]
 				: undefined;
 
-			await workspacesService.changeUserRole(
-				workspaceId,
-				memberId,
-				newRole,
+			await apiService.patch<void, { role: WorkspaceRole }>(
+				ApiRoute.WorkspaceMemberRole,
+				{ role: newRole },
+				{
+					pathParams: {
+						workspaceId,
+						userId: memberId,
+					},
+				},
 			);
 			await invalidateMembers();
 			setActiveDropdown(null);
@@ -119,7 +126,16 @@ export const useWorkspaceMembers = (workspaceId: number) => {
 	const handleRemoveMember = async (memberId: number) => {
 		try {
 			const member = members.find((m) => m.id === memberId);
-			await workspacesService.removeUser(workspaceId, memberId);
+			await apiService.delete<{ message: string }>(
+				ApiRoute.WorkspaceMemberById,
+				undefined,
+				{
+					pathParams: {
+						workspaceId,
+						userId: memberId,
+					},
+				},
+			);
 			await invalidateMembers();
 			addToast(
 				createSuccessToast(

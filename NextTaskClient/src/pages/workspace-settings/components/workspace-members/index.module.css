@@ -6,12 +6,6 @@
 	padding: 18px;
 	border: 1px solid var(--input-border-color);
 	border-radius: 20px;
-	background: linear-gradient(
-		180deg,
-		var(--surface-elevated),
-		var(--card-bg)
-	);
-	box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
 }
 
 .hero {
@@ -233,7 +227,6 @@
 		var(--card-bg) 88%,
 		var(--surface-elevated) 12%
 	);
-	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
 }
 
 .memberItem:last-child {

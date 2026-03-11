@@ -11,7 +11,7 @@ import {
 import styles from "./index.module.css";
 import glass from "@shared/styles/glass.module.css";
 import type { User } from "@entities/user";
-import { authService } from "@entities/user";
+import { useAuthStore } from "@entities/user";
 import { useChatStore, selectTotalUnreadCount } from "@entities/chat";
 
 interface BottomDockProps {
@@ -21,8 +21,9 @@ interface BottomDockProps {
 const BottomDock: FC<BottomDockProps> = ({ user }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { toggleChat, isOpen } = useChatStore();
+	const { toggleChat, isOpen, reset } = useChatStore();
 	const totalUnread = useChatStore(selectTotalUnreadCount);
+	const logout = useAuthStore((state) => state.logout);
 
 	const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 	const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -43,7 +44,9 @@ const BottomDock: FC<BottomDockProps> = ({ user }) => {
 	}, []);
 
 	const handleLogout = () => {
-		authService.logout();
+		reset();
+		logout();
+		localStorage.removeItem("refresh_token");
 		navigate("/login");
 	};
 

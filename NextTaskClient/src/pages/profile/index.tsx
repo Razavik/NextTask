@@ -1,5 +1,10 @@
 import { FC, useState, useEffect, useMemo, useRef } from "react";
-import { useAuthStore, profileService } from "@entities/user";
+import {
+	useAuthStore,
+	type ProfileData,
+	type ProfileUpdateRequest,
+	type PasswordChangeRequest,
+} from "@entities/user";
 import { useNavigate, useParams } from "react-router-dom";
 import styles from "./index.module.css";
 import ProfileMainInfo from "./components/ProfileMainInfo";
@@ -9,7 +14,7 @@ import WorkspaceHeader from "@widgets/workspace-header/ui";
 import TabNavigation from "@shared/ui/tab-navigation";
 import { useMyInvitesCount } from "@features/invites";
 import { useToast } from "@shared/lib/hooks/useToast";
-import { ProfileUpdateRequest, PasswordChangeRequest } from "@entities/user";
+import { apiService, ApiRoute } from "@shared/api";
 import { User, Shield, Link, Mail } from "lucide-react";
 import ProfileInvites from "./components/profile-invites";
 import glass from "@shared/styles/glass.module.css";
@@ -102,7 +107,9 @@ const Profile: FC = () => {
 			}
 
 			try {
-				const profileData = await profileService.getProfile();
+				const profileData = await apiService.get<ProfileData>(
+					ApiRoute.ProfileMe,
+				);
 				setProfile({
 					name: profileData.name || "",
 					email: profileData.email,
@@ -153,7 +160,18 @@ const Profile: FC = () => {
 		setAvatarPreview(url);
 		setAvatarUploading(true);
 		try {
-			const avatarResponse = await profileService.uploadAvatar(file);
+			const formData = new FormData();
+			formData.append("file", file);
+			const avatarResponse = await apiService.post<
+				{ avatar?: string },
+				FormData
+			>("/profile/avatar", formData, {
+				config: {
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
+				},
+			});
 			setProfile((prev) => ({
 				...prev,
 				avatar: avatarResponse.avatar || prev.avatar,
@@ -188,8 +206,10 @@ const Profile: FC = () => {
 				position: profile.position || undefined,
 			};
 
-			const updatedProfile =
-				await profileService.updateProfile(updateData);
+			const updatedProfile = await apiService.put<
+				ProfileData,
+				ProfileUpdateRequest
+			>("/profile/me", updateData);
 
 			setProfile((prev) => ({
 				...prev,
@@ -218,7 +238,10 @@ const Profile: FC = () => {
 		setLoading(true);
 
 		try {
-			await profileService.changePassword(passwordData);
+			await apiService.post<void, PasswordChangeRequest>(
+				"/profile/change-password",
+				passwordData,
+			);
 			toast.success("Успешно!", "Пароль успешно изменён.");
 		} catch (error) {
 			console.error("Ошибка смены пароля:", error);

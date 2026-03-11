@@ -1,0 +1,79 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "NextTask: Client",
+			"type": "shell",
+			"command": "npm.cmd",
+			"args": ["run", "dev"],
+			"options": {
+				"cwd": "${workspaceFolder}/NextTaskClient"
+			},
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"group": "nexttask"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "NextTask: Server",
+			"type": "shell",
+			"command": "python",
+			"args": ["-m", "uvicorn", "main:app", "--reload"],
+			"options": {
+				"cwd": "${workspaceFolder}/NextTaskServer"
+			},
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"group": "nexttask"
+			},
+			"problemMatcher": []
+		},
+    {
+      "label": "NextTask: Start Client + Server",
+      "dependsOn": ["NextTask: Client", "NextTask: Server"],
+      "dependsOrder": "parallel"
+    },
+    {
+      "label": "NextTask: Stop Client (5174)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "$conn = Get-NetTCPConnection -LocalPort 5174 -State Listen -ErrorAction SilentlyContinue; if ($conn) { Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue }"
+      ],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared",
+        "group": "nexttask"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "NextTask: Stop Server (8000)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "$conn = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue; if ($conn) { Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue }"
+      ],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared",
+        "group": "nexttask"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "NextTask: Stop Client + Server",
+      "dependsOn": ["NextTask: Stop Client (5174)", "NextTask: Stop Server (8000)"],
+      "dependsOrder": "parallel"
+    }
+  ]
+}

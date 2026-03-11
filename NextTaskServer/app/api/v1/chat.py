@@ -52,17 +52,36 @@ workspace_chat_router = APIRouter()
 # Хранилище активных WebSocket соединений
 class ConnectionManager:
     def __init__(self):
-        self.personal_connections: Dict[int, WebSocket] = {}  # user_id -> websocket
+        self.personal_connections: Dict[int, Set[WebSocket]] = {}  # user_id -> active websockets
         self.group_connections: Dict[int, Dict[int, WebSocket]] = {}  # chat_id -> {user_id -> websocket}
     
     async def connect_personal(self, user_id: int, websocket: WebSocket):
         """Подключить личный чат"""
-        self.personal_connections[user_id] = websocket
+        was_offline = user_id not in self.personal_connections or not self.personal_connections[user_id]
+        if user_id not in self.personal_connections:
+            self.personal_connections[user_id] = set()
+        self.personal_connections[user_id].add(websocket)
+        await self.send_personal_message(
+            {
+                "type": "presence_snapshot",
+                "user_ids": [uid for uid, sockets in self.personal_connections.items() if sockets],
+            },
+            user_id,
+        )
+        if was_offline:
+            await self.broadcast_personal_presence(user_id, True, exclude_user_id=user_id)
     
-    async def disconnect_personal(self, user_id: int):
+    async def disconnect_personal(self, user_id: int, websocket: Optional[WebSocket] = None):
         """Отключить личный чат"""
         if user_id in self.personal_connections:
-            del self.personal_connections[user_id]
+            if websocket is None:
+                self.personal_connections[user_id].clear()
+            else:
+                self.personal_connections[user_id].discard(websocket)
+
+            if not self.personal_connections[user_id]:
+                del self.personal_connections[user_id]
+                await self.broadcast_personal_presence(user_id, False)
     
     async def connect_group(self, chat_id: int, user_id: int, websocket: WebSocket):
         """Подключить к групповому чату"""
@@ -81,12 +100,33 @@ class ConnectionManager:
     async def send_personal_message(self, message: dict, receiver_id: int):
         """Отправить личное сообщение"""
         if receiver_id in self.personal_connections:
-            websocket = self.personal_connections[receiver_id]
-            try:
-                await websocket.send_text(json.dumps(message))
-            except:
-                # Соединение закрыто, удаляем
-                await self.disconnect_personal(receiver_id)
+            sockets = list(self.personal_connections[receiver_id])
+            stale_sockets: List[WebSocket] = []
+            for websocket in sockets:
+                try:
+                    await websocket.send_text(json.dumps(message))
+                except:
+                    stale_sockets.append(websocket)
+
+            for websocket in stale_sockets:
+                await self.disconnect_personal(receiver_id, websocket)
+
+    async def broadcast_personal_presence(
+        self,
+        user_id: int,
+        is_online: bool,
+        exclude_user_id: int | None = None,
+    ):
+        payload = {
+            "type": "presence",
+            "user_id": user_id,
+            "is_online": is_online,
+        }
+        receiver_ids = list(self.personal_connections.keys())
+        for receiver_id in receiver_ids:
+            if exclude_user_id is not None and receiver_id == exclude_user_id:
+                continue
+            await self.send_personal_message(payload, receiver_id)
     
     async def broadcast_to_group(self, message: dict, chat_id: int, sender_id: int = None):
         """Отправить сообщение всем в рабочем пространстве"""
@@ -213,6 +253,7 @@ async def websocket_personal_chat(websocket: WebSocket, token: str = Query(...))
                             "type": "new_message",
                             "message": {
                                 "id": message.id,
+                                "temp_client_id": message_data.get("temp_client_id"),
                                 "content": message.content,
                                 "sender_id": message.sender_id,
                                 "receiver_id": message.receiver_id,
@@ -250,13 +291,23 @@ async def websocket_personal_chat(websocket: WebSocket, token: str = Query(...))
                         if receiver_id:
                             await manager.send_personal_message({
                                 "type": "typing",
-                                "sender_id": user.id
+                                "sender_id": user.id,
+                                "is_typing": bool(message_data.get("is_typing", True)),
                             }, receiver_id)
+                    
+                    elif event_type == "presence_snapshot_request":
+                        await manager.send_personal_message(
+                            {
+                                "type": "presence_snapshot",
+                                "user_ids": [uid for uid, sockets in manager.personal_connections.items() if sockets],
+                            },
+                            user.id,
+                        )
 
             except WebSocketDisconnect:
                 pass
             finally:
-                await manager.disconnect_personal(user.id)
+                await manager.disconnect_personal(user.id, websocket)
                 
         finally:
             db.close()
@@ -337,6 +388,7 @@ async def websocket_workspace_chat(websocket: WebSocket, chat_id: int, token: st
                             "type": "new_message",
                             "message": {
                                 "id": message.id,
+                                "temp_client_id": message_data.get("temp_client_id"),
                                 "content": message.content,
                                 "chat_id": message.chat_id,
                                 "sender_id": message.sender_id,
@@ -363,7 +415,8 @@ async def websocket_workspace_chat(websocket: WebSocket, chat_id: int, token: st
                         await manager.broadcast_to_group({
                             "type": "typing",
                             "sender_id": user.id,
-                            "chat_id": chat_id
+                            "chat_id": chat_id,
+                            "is_typing": bool(message_data.get("is_typing", True)),
                         }, chat_id, user.id)
                     
             except WebSocketDisconnect:
@@ -389,8 +442,14 @@ async def update_message(
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
         
-    if message.sender_id != current_user.id:
+    if message.sender_id != current_user.id and not message_update.is_pinned is not None:
         raise HTTPException(status_code=403, detail="Not authorized to edit this message")
+        
+    # Разрешаем изменять только is_pinned, если мы не автор
+    if message.sender_id != current_user.id and message_update.is_pinned is not None:
+        # Проверяем, что пытаются изменить только is_pinned
+        if message_update.content is not None or message_update.attachments is not None:
+            raise HTTPException(status_code=403, detail="Not authorized to edit this message's content")
         
     if message_update.content is not None:
         message.content = message_update.content
@@ -552,8 +611,14 @@ async def update_workspace_message(
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
         
-    if message.sender_id != current_user.id:
+    if message.sender_id != current_user.id and not message_update.is_pinned is not None:
         raise HTTPException(status_code=403, detail="Not authorized to edit this message")
+        
+    # Разрешаем изменять только is_pinned, если мы не автор
+    if message.sender_id != current_user.id and message_update.is_pinned is not None:
+        # Проверяем, что пытаются изменить только is_pinned
+        if message_update.content is not None or message_update.attachments is not None:
+            raise HTTPException(status_code=403, detail="Not authorized to edit this message's content")
         
     if message_update.content is not None:
         message.content = message_update.content
@@ -708,14 +773,80 @@ def get_chat_history(
     user_id: int,
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    around: int = Query(None, description="ID сообщения, вокруг которого нужно загрузить историю"),
+    before: int = Query(None, description="ID сообщения, до которого нужно загрузить более старые сообщения"),
+    after: int = Query(None, description="ID сообщения, после которого нужно загрузить более новые сообщения"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Получить историю личных сообщений с пользователем"""
-    messages = db.query(ORMMessage).filter(
+    query = db.query(ORMMessage).filter(
         ((ORMMessage.sender_id == current_user.id) & (ORMMessage.receiver_id == user_id)) |
         ((ORMMessage.sender_id == user_id) & (ORMMessage.receiver_id == current_user.id))
-    ).order_by(ORMMessage.created_at.desc()).offset(offset).limit(limit).all()
+    )
+
+    def newer_filter(target: ORMMessage):
+        return (
+            (ORMMessage.created_at > target.created_at) |
+            ((ORMMessage.created_at == target.created_at) & (ORMMessage.id > target.id))
+        )
+
+    def older_filter(target: ORMMessage):
+        return (
+            (ORMMessage.created_at < target.created_at) |
+            ((ORMMessage.created_at == target.created_at) & (ORMMessage.id < target.id))
+        )
+    
+    if before is not None:
+        target_message = query.filter(ORMMessage.id == before).first()
+        if target_message:
+            messages = query.filter(
+                older_filter(target_message)
+            ).order_by(ORMMessage.created_at.desc(), ORMMessage.id.desc()).limit(limit).all()
+        else:
+            messages = []
+    elif after is not None:
+        target_message = query.filter(ORMMessage.id == after).first()
+        if target_message:
+            messages = query.filter(
+                newer_filter(target_message)
+            ).order_by(ORMMessage.created_at.asc(), ORMMessage.id.asc()).limit(limit).all()
+            messages.sort(key=lambda x: (x.created_at, x.id), reverse=True)
+        else:
+            messages = []
+    elif around is not None:
+        target_message = query.filter(ORMMessage.id == around).first()
+        if target_message:
+            older_target = limit // 2
+            newer_target = limit - older_target - 1
+
+            older = query.filter(
+                older_filter(target_message)
+            ).order_by(ORMMessage.created_at.desc(), ORMMessage.id.desc()).limit(older_target).all()
+            newer = query.filter(
+                newer_filter(target_message)
+            ).order_by(ORMMessage.created_at.asc(), ORMMessage.id.asc()).limit(newer_target).all()
+
+            if len(older) < older_target:
+                newer = query.filter(
+                    newer_filter(target_message)
+                ).order_by(ORMMessage.created_at.asc(), ORMMessage.id.asc()).limit(
+                    newer_target + (older_target - len(older))
+                ).all()
+
+            if len(newer) < newer_target:
+                older = query.filter(
+                    older_filter(target_message)
+                ).order_by(ORMMessage.created_at.desc(), ORMMessage.id.desc()).limit(
+                    older_target + (newer_target - len(newer))
+                ).all()
+
+            messages = older + [target_message] + newer
+            messages.sort(key=lambda x: (x.created_at, x.id), reverse=True)
+        else:
+            messages = query.order_by(ORMMessage.created_at.desc()).offset(offset).limit(limit).all()
+    else:
+        messages = query.order_by(ORMMessage.created_at.desc()).offset(offset).limit(limit).all()
     
     def to_message_schema(message: ORMMessage) -> MessageSchema:
         replied_message_data = None
@@ -752,12 +883,60 @@ def get_chat_history(
     return [to_message_schema(msg) for msg in messages]
 
 @router.post("/messages", response_model=MessageSchema)
-def send_personal_message(
+async def send_personal_message(
     payload: MessageCreate,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Отправить личное сообщение (REST)"""
+    def to_message_schema(message: ORMMessage) -> MessageSchema:
+        replied_message_data = None
+        if message.reply_to_id and getattr(message, 'replied_message', None):
+            replied_sender = message.replied_message.sender
+            replied_message_data = {
+                "id": message.replied_message.id,
+                "content": message.replied_message.content,
+                "is_edited": message.replied_message.is_edited,
+                "created_at": message.replied_message.created_at.isoformat() if hasattr(message.replied_message.created_at, 'isoformat') else str(message.replied_message.created_at),
+                "sender": {
+                    "id": replied_sender.id,
+                    "name": replied_sender.name,
+                    "email": replied_sender.email,
+                    "avatar": _avatar_to_base64(replied_sender.avatar)
+                } if replied_sender else None
+            }
+
+        sender = message.sender if hasattr(message, "sender") else None
+        receiver = message.receiver if hasattr(message, "receiver") else None
+
+        return MessageSchema(
+            id=message.id,
+            sender_id=message.sender_id,
+            receiver_id=message.receiver_id,
+            chat_id=message.chat_id,
+            content=message.content,
+            is_read=1 if message.is_read else 0,
+            is_edited=message.is_edited,
+            is_pinned=message.is_pinned,
+            reply_to_id=message.reply_to_id,
+            replied_message=replied_message_data,
+            sender=MessageAuthor(
+                id=sender.id,
+                name=sender.name,
+                email=sender.email,
+                avatar=_avatar_to_base64(sender.avatar),
+            ) if sender else None,
+            receiver=MessageAuthor(
+                id=receiver.id,
+                name=receiver.name,
+                email=receiver.email,
+                avatar=_avatar_to_base64(receiver.avatar),
+            ) if receiver else None,
+            created_at=message.created_at.isoformat() if hasattr(message.created_at, 'isoformat') else str(message.created_at),
+            updated_at=message.updated_at.isoformat() if message.updated_at and hasattr(message.updated_at, 'isoformat') else str(message.updated_at) if message.updated_at else None,
+            attachments=json.loads(message.attachments) if message.attachments else []
+        )
+
     # Создаём сообщение
     message = ORMMessage(
         content=payload.content,
@@ -769,17 +948,17 @@ def send_personal_message(
     db.commit()
     db.refresh(message)
 
-    return MessageSchema(
-        id=message.id,
-        sender_id=message.sender_id,
-        receiver_id=message.receiver_id,
-        content=message.content,
-        is_read=1 if message.is_read else 0,
-        is_edited=message.is_edited,
-        created_at=message.created_at,
-        updated_at=message.updated_at,
-        attachments=json.loads(message.attachments) if message.attachments else []
+    response_message = to_message_schema(message)
+
+    await manager.send_personal_message(
+        {
+            "type": "new_message",
+            "message": response_message.model_dump(),
+        },
+        message.receiver_id,
     )
+
+    return response_message
 
 @router.patch("/messages/{message_id}/read", response_model=MessageSchema)
 def mark_message_as_read(
@@ -800,6 +979,25 @@ def mark_message_as_read(
     message.read_at = datetime.utcnow()
     db.commit()
     db.refresh(message)
+
+    response = {
+        "type": "message_read",
+        "message": {
+            "id": message.id,
+            "sender_id": message.sender_id,
+            "receiver_id": message.receiver_id,
+            "is_read": 1 if message.is_read else 0,
+            "updated_at": message.updated_at.isoformat() if message.updated_at and hasattr(message.updated_at, 'isoformat') else str(message.updated_at) if message.updated_at else None,
+        }
+    }
+
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(manager.send_personal_message(response, message.sender_id))
+        loop.create_task(manager.send_personal_message(response, message.receiver_id))
+    except RuntimeError:
+        asyncio.run(manager.send_personal_message(response, message.sender_id))
+        asyncio.run(manager.send_personal_message(response, message.receiver_id))
     
     return MessageSchema(
         id=message.id,
@@ -826,11 +1024,152 @@ def get_unread_count(
     
     return count
 
+@router.get("/messages/{user_id}/pinned", response_model=MessageSchema)
+def get_pinned_personal_message(
+    user_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Получить закрепленное сообщение в личном чате"""
+    message = (
+        db.query(ORMMessage)
+        .filter(
+            ORMMessage.chat_id.is_(None),
+            ORMMessage.sender_id.in_([current_user.id, user_id]),
+            ORMMessage.receiver_id.in_([current_user.id, user_id]),
+            ORMMessage.is_pinned == True
+        )
+        .first()
+    )
+    def to_message_schema_local(msg: ORMMessage, db_session: Session) -> MessageSchema:
+        replied_message_data = None
+        if msg.reply_to_id and getattr(msg, 'replied_message', None):
+            replied_sender = msg.replied_message.sender
+            replied_message_data = {
+                "id": msg.replied_message.id,
+                "content": msg.replied_message.content,
+                "is_edited": msg.replied_message.is_edited,
+                "created_at": msg.replied_message.created_at.isoformat() if hasattr(msg.replied_message.created_at, 'isoformat') else str(msg.replied_message.created_at),
+                "sender": {
+                    "id": replied_sender.id if replied_sender else msg.replied_message.sender_id,
+                    "name": replied_sender.name if replied_sender else None,
+                    "email": replied_sender.email if replied_sender else "",
+                    "avatar": _avatar_to_base64(replied_sender.avatar) if replied_sender else None
+                } if replied_sender else None
+            }
+
+        sender = getattr(msg, "sender", None)
+        receiver = getattr(msg, "receiver", None)
+
+        return MessageSchema(
+            id=msg.id,
+            sender_id=msg.sender_id,
+            receiver_id=msg.receiver_id,
+            chat_id=msg.chat_id,
+            content=msg.content,
+            is_read=1 if msg.is_read else 0,
+            is_edited=msg.is_edited,
+            is_pinned=msg.is_pinned,
+            reply_to_id=msg.reply_to_id,
+            replied_message=replied_message_data,
+            sender=MessageAuthor(
+                id=sender.id,
+                name=sender.name,
+                email=sender.email,
+                avatar=_avatar_to_base64(sender.avatar),
+            ) if sender else None,
+            receiver=MessageAuthor(
+                id=receiver.id,
+                name=receiver.name,
+                email=receiver.email,
+                avatar=_avatar_to_base64(receiver.avatar),
+            ) if receiver else None,
+            created_at=msg.created_at.isoformat() if hasattr(msg.created_at, 'isoformat') else str(msg.created_at),
+            updated_at=msg.updated_at.isoformat() if msg.updated_at and hasattr(msg.updated_at, 'isoformat') else str(msg.updated_at) if msg.updated_at else None,
+            attachments=json.loads(msg.attachments) if msg.attachments else []
+        )
+
+    if not message:
+        raise HTTPException(status_code=404, detail="Pinned message not found")
+    return to_message_schema_local(message, db)
+
+@router.get("/messages/workspace/{chat_id}/pinned", response_model=MessageSchema)
+def get_pinned_workspace_message(
+    chat_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Получить закрепленное сообщение в групповом чате"""
+    check_chat_access(chat_id, current_user, db)
+    message = (
+        db.query(ORMMessage)
+        .filter(
+            ORMMessage.chat_id == chat_id,
+            ORMMessage.is_pinned == True
+        )
+        .first()
+    )
+    
+    def to_message_schema_local(msg: ORMMessage, db_session: Session) -> MessageSchema:
+        replied_message_data = None
+        if msg.reply_to_id and getattr(msg, 'replied_message', None):
+            replied_sender = msg.replied_message.sender
+            replied_message_data = {
+                "id": msg.replied_message.id,
+                "content": msg.replied_message.content,
+                "is_edited": msg.replied_message.is_edited,
+                "created_at": msg.replied_message.created_at.isoformat() if hasattr(msg.replied_message.created_at, 'isoformat') else str(msg.replied_message.created_at),
+                "sender": {
+                    "id": replied_sender.id if replied_sender else msg.replied_message.sender_id,
+                    "name": replied_sender.name if replied_sender else None,
+                    "email": replied_sender.email if replied_sender else "",
+                    "avatar": _avatar_to_base64(replied_sender.avatar) if replied_sender else None
+                } if replied_sender else None
+            }
+
+        sender = getattr(msg, "sender", None)
+        receiver = getattr(msg, "receiver", None)
+
+        return MessageSchema(
+            id=msg.id,
+            sender_id=msg.sender_id,
+            receiver_id=msg.receiver_id,
+            chat_id=msg.chat_id,
+            content=msg.content,
+            is_read=1 if msg.is_read else 0,
+            is_edited=msg.is_edited,
+            is_pinned=msg.is_pinned,
+            reply_to_id=msg.reply_to_id,
+            replied_message=replied_message_data,
+            sender=MessageAuthor(
+                id=sender.id,
+                name=sender.name,
+                email=sender.email,
+                avatar=_avatar_to_base64(sender.avatar),
+            ) if sender else None,
+            receiver=MessageAuthor(
+                id=receiver.id,
+                name=receiver.name,
+                email=receiver.email,
+                avatar=_avatar_to_base64(receiver.avatar),
+            ) if receiver else None,
+            created_at=msg.created_at.isoformat() if hasattr(msg.created_at, 'isoformat') else str(msg.created_at),
+            updated_at=msg.updated_at.isoformat() if msg.updated_at and hasattr(msg.updated_at, 'isoformat') else str(msg.updated_at) if msg.updated_at else None,
+            attachments=json.loads(msg.attachments) if msg.attachments else []
+        )
+        
+    if not message:
+        raise HTTPException(status_code=404, detail="Pinned message not found")
+    return to_message_schema_local(message, db)
+
 @router.get("/messages/workspace/{chat_id}", response_model=List[MessageSchema])
 def get_workspace_chat_history(
     chat_id: int,
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    around: int = Query(None, description="ID сообщения, вокруг которого нужно загрузить историю"),
+    before: int = Query(None, description="ID сообщения, до которого нужно загрузить более старые сообщения"),
+    after: int = Query(None, description="ID сообщения, после которого нужно загрузить более новые сообщения"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -838,9 +1177,72 @@ def get_workspace_chat_history(
     # Проверяем доступ
     workspace = check_chat_access(chat_id, current_user, db)
     
-    messages = db.query(ORMMessage).filter(
+    query = db.query(ORMMessage).filter(
         ORMMessage.chat_id == chat_id
-    ).order_by(ORMMessage.created_at.desc()).offset(offset).limit(limit).all()
+    )
+
+    def newer_filter(target: ORMMessage):
+        return (
+            (ORMMessage.created_at > target.created_at) |
+            ((ORMMessage.created_at == target.created_at) & (ORMMessage.id > target.id))
+        )
+
+    def older_filter(target: ORMMessage):
+        return (
+            (ORMMessage.created_at < target.created_at) |
+            ((ORMMessage.created_at == target.created_at) & (ORMMessage.id < target.id))
+        )
+    
+    if before is not None:
+        target_message = query.filter(ORMMessage.id == before).first()
+        if target_message:
+            messages = query.filter(
+                older_filter(target_message)
+            ).order_by(ORMMessage.created_at.desc(), ORMMessage.id.desc()).limit(limit).all()
+        else:
+            messages = []
+    elif after is not None:
+        target_message = query.filter(ORMMessage.id == after).first()
+        if target_message:
+            messages = query.filter(
+                newer_filter(target_message)
+            ).order_by(ORMMessage.created_at.asc(), ORMMessage.id.asc()).limit(limit).all()
+            messages.sort(key=lambda x: (x.created_at, x.id), reverse=True)
+        else:
+            messages = []
+    elif around is not None:
+        target_message = query.filter(ORMMessage.id == around).first()
+        if target_message:
+            older_target = limit // 2
+            newer_target = limit - older_target - 1
+
+            older = query.filter(
+                older_filter(target_message)
+            ).order_by(ORMMessage.created_at.desc(), ORMMessage.id.desc()).limit(older_target).all()
+            newer = query.filter(
+                newer_filter(target_message)
+            ).order_by(ORMMessage.created_at.asc(), ORMMessage.id.asc()).limit(newer_target).all()
+
+            if len(older) < older_target:
+                newer = query.filter(
+                    newer_filter(target_message)
+                ).order_by(ORMMessage.created_at.asc(), ORMMessage.id.asc()).limit(
+                    newer_target + (older_target - len(older))
+                ).all()
+
+            if len(newer) < newer_target:
+                older = query.filter(
+                    older_filter(target_message)
+                ).order_by(ORMMessage.created_at.desc(), ORMMessage.id.desc()).limit(
+                    older_target + (newer_target - len(newer))
+                ).all()
+
+            messages = older + [target_message] + newer
+            messages.sort(key=lambda x: (x.created_at, x.id), reverse=True)
+        else:
+            messages = query.order_by(ORMMessage.created_at.desc()).offset(offset).limit(limit).all()
+    else:
+        messages = query.order_by(ORMMessage.created_at.desc()).offset(offset).limit(limit).all()
     
     def to_workspace_message_schema(wm: ORMMessage) -> MessageSchema:
         replied_message_data = None
@@ -888,10 +1290,12 @@ def get_workspace_chat_history_alias(
     chat_id: int,
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    around: int = Query(None, description="ID сообщения, вокруг которого нужно загрузить историю"),
+    after: int = Query(None, description="ID сообщения, после которого нужно загрузить более новые сообщения"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    return get_workspace_chat_history(chat_id, limit, offset, current_user, db)
+    return get_workspace_chat_history(chat_id, limit, offset, around, after, current_user, db)
 
 # WS alias: /workspace-chat/ws/{chat_id}
 @workspace_chat_router.websocket("/ws/{chat_id}")
@@ -1015,10 +1419,11 @@ def get_recent_chats(
     chat_last_msg = {}
     if member_chats:
         chat_ids = [c.id for c in member_chats]
-        last_chat_messages = db.query(ORMMessage.chat_id, func.max(ORMMessage.created_at).label('last_at')).filter(
-            ORMMessage.chat_id.in_(chat_ids)
-        ).group_by(ORMMessage.chat_id).all()
-        chat_last_msg = {row.chat_id: row.last_at for row in last_chat_messages}
+        if chat_ids:
+            last_chat_messages = db.query(ORMMessage.chat_id, func.max(ORMMessage.created_at).label('last_at')).filter(
+                ORMMessage.chat_id.in_(chat_ids)
+            ).group_by(ORMMessage.chat_id).all()
+            chat_last_msg = {row.chat_id: row.last_at for row in last_chat_messages}
     
     for chat in member_chats:
         key = f"chat-{chat.id}"
@@ -1072,20 +1477,20 @@ def get_all_chats(
             workspace_id=user_workspace.id if user_workspace else None
         )
     
-    # Получаем все групповые чаты пользователя
+    # Получаем групповые чаты пользователя (если есть логика "all", тоже проверим)
     member_chats = db.query(ORMChat).join(ORMChatMember).filter(
         ORMChatMember.user_id == current_user.id
     ).all()
     
-    # Для групповых чатов получаем время последнего сообщения
     chat_last_msg = {}
     if member_chats:
         chat_ids = [c.id for c in member_chats]
-        last_chat_messages = db.query(ORMMessage.chat_id, func.max(ORMMessage.created_at).label('last_at')).filter(
-            ORMMessage.chat_id.in_(chat_ids)
-        ).group_by(ORMMessage.chat_id).all()
-        chat_last_msg = {row.chat_id: row.last_at for row in last_chat_messages}
-    
+        if chat_ids:
+            last_chat_messages = db.query(ORMMessage.chat_id, func.max(ORMMessage.created_at).label('last_at')).filter(
+                ORMMessage.chat_id.in_(chat_ids)
+            ).group_by(ORMMessage.chat_id).all()
+            chat_last_msg = {row.chat_id: row.last_at for row in last_chat_messages}
+            
     for chat in member_chats:
         all_chats[f"chat-{chat.id}"] = RecentChatItem(
             id=f"chat-{chat.id}",

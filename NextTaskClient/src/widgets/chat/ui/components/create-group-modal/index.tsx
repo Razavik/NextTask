@@ -2,7 +2,7 @@ import { FC, useState, useEffect } from "react";
 import styles from "./index.module.css";
 import { X } from "lucide-react";
 import Button from "@shared/ui/button";
-import api from "@shared/api/axios";
+import { apiService, ApiRoute } from "@shared/api";
 import { useAuthStore } from "@entities/user";
 import type { User } from "@entities/user";
 import Loader from "@shared/ui/loader";
@@ -36,8 +36,8 @@ const CreateGroupModal: FC<CreateGroupModalProps> = ({ onClose, onCreate }) => {
 		setIsLoading(true);
 		const timer = setTimeout(async () => {
 			try {
-				const { data } = await api.get<User[]>("/users", {
-					params: { search: query },
+				const data = await apiService.get<User[]>(ApiRoute.Users, {
+					query: { search: query },
 				});
 				if (cancelled) return;
 				setAllUsers(data.filter((u: User) => u.id !== currentUser?.id));

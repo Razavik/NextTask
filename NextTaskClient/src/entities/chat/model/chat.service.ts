@@ -1,12 +1,13 @@
-// Сервис для работы с чатом через REST API и WebSocket
-import api from "@shared/api/axios";
-import type { Message, MessageCreate } from "@shared/types/message";
-import type { ChatContact } from "./chatStore";
+// Сервис для работы с чатом через WebSocket
+import type { Message } from "@shared/types/message";
 
 type GroupMessagePayload = {
+	type?: "message" | "typing";
 	content: string;
 	attachments?: string[];
 	reply_to_id?: number | null;
+	temp_client_id?: string;
+	is_typing?: boolean;
 	[type: string]: unknown;
 };
 
@@ -23,12 +24,16 @@ class ChatService {
 	private lastToken: string | null = null;
 	private groupSendQueue: GroupMessagePayload[] = [];
 
-	/**
-	 * Отправить личное сообщение (REST)
-	 */
-	async sendPersonalMessage(payload: MessageCreate): Promise<Message> {
-		const { data } = await api.post<Message>("/chat/messages", payload);
-		return data;
+	private getWsBaseUrl() {
+		const explicit = import.meta.env.VITE_WS_URL as string | undefined;
+		if (explicit) {
+			return explicit.replace(/\/$/, "");
+		}
+
+		const apiBase =
+			(import.meta.env.VITE_API_URL as string | undefined) ??
+			"http://localhost:8000";
+		return apiBase.replace(/^http/, "ws").replace(/\/$/, "");
 	}
 
 	private async refreshTokenWS(): Promise<string> {
@@ -62,7 +67,7 @@ class ChatService {
 		this.lastToken = fresh;
 		// Персональный канал держим постоянно
 		if (this.wsPersonal?.readyState === WebSocket.OPEN) return;
-		const wsUrl = `ws://127.0.0.1:8000/chat/ws?token=${fresh}`;
+		const wsUrl = `${this.getWsBaseUrl()}/chat/ws?token=${fresh}`;
 		this.wsPersonal = new WebSocket(wsUrl);
 		this.wsPersonal.onopen = () => {
 			this.reconnectPersonalAttempts = 0;
@@ -162,7 +167,7 @@ class ChatService {
 
 		this.currentGroupId = chatId;
 		// Обратите внимание на URL - он должен соответствовать бекенду
-		const wsUrl = `ws://127.0.0.1:8000/chat/ws/${chatId}?token=${fresh}`;
+		const wsUrl = `${this.getWsBaseUrl()}/chat/ws/${chatId}?token=${fresh}`;
 		const socket = new WebSocket(wsUrl);
 		this.wsGroup = socket;
 
@@ -224,12 +229,23 @@ class ChatService {
 	/**
 	 * Отправить сообщение через WebSocket
 	 */
-	sendMessage(receiverId: number, content: string) {
+	sendMessage(payload: {
+		type?: "message";
+		receiver_id: number;
+		content: string;
+		attachments?: string[];
+		reply_to_id?: number | null;
+		temp_client_id?: string;
+	}) {
 		if (!this.wsPersonal || this.wsPersonal.readyState !== WebSocket.OPEN) {
 			throw new Error(`WebSocket (personal) is not connected.`);
 		}
-		const payload = { receiver_id: receiverId, content };
-		this.wsPersonal.send(JSON.stringify(payload));
+		this.wsPersonal.send(
+			JSON.stringify({
+				type: "message",
+				...payload,
+			}),
+		);
 	}
 
 	/**
@@ -246,7 +262,12 @@ class ChatService {
 			this.wsGroup.readyState === WebSocket.OPEN &&
 			this.currentGroupId === targetId
 		) {
-			this.wsGroup.send(JSON.stringify(payload));
+			this.wsGroup.send(
+				JSON.stringify({
+					type: "message",
+					...payload,
+				}),
+			);
 			return;
 		}
 
@@ -262,9 +283,52 @@ class ChatService {
 		}
 
 		this.currentGroupId = targetId;
-		this.groupSendQueue.push(payload);
+		this.groupSendQueue.push({
+			type: "message",
+			...payload,
+		});
 		if (this.lastToken) {
 			this.connectToGroup(targetId, this.lastToken);
+		}
+	}
+
+	sendTyping(receiverId: number, isTyping: boolean) {
+		if (!this.wsPersonal || this.wsPersonal.readyState !== WebSocket.OPEN) {
+			return;
+		}
+		this.wsPersonal.send(
+			JSON.stringify({
+				type: "typing",
+				receiver_id: receiverId,
+				is_typing: isTyping,
+			}),
+		);
+	}
+
+	requestPresenceSnapshot() {
+		if (!this.wsPersonal || this.wsPersonal.readyState !== WebSocket.OPEN) {
+			return;
+		}
+		this.wsPersonal.send(
+			JSON.stringify({
+				type: "presence_snapshot_request",
+			}),
+		);
+	}
+
+	sendGroupTyping(chatId: number, isTyping: boolean) {
+		if (
+			this.wsGroup &&
+			this.wsGroup.readyState === WebSocket.OPEN &&
+			this.currentGroupId === chatId
+		) {
+			this.wsGroup.send(
+				JSON.stringify({
+					type: "typing",
+					chat_id: chatId,
+					is_typing: isTyping,
+				}),
+			);
 		}
 	}
 
@@ -278,138 +342,6 @@ class ChatService {
 		return () => {
 			this.messageHandlers.delete(handler);
 		};
-	}
-
-	/**
-	 * Получить историю сообщений с пользователем
-	 */
-	async getHistory(
-		userId: number,
-		limit = 50,
-		offset = 0,
-	): Promise<Message[]> {
-		const { data } = await api.get<Message[]>(`/chat/messages/${userId}`, {
-			params: { limit, offset },
-		});
-		return data;
-	}
-
-	/**
-	 * Отметить сообщение как прочитанное
-	 */
-	async markAsRead(messageId: number): Promise<Message> {
-		const { data } = await api.patch<Message>(
-			`/chat/messages/${messageId}/read`,
-		);
-		return data;
-	}
-
-	/**
-	 * Получить количество непрочитанных сообщений
-	 */
-	async getUnreadCount(): Promise<number> {
-		const { data } = await api.get<number>("/chat/unread-count");
-		return data;
-	}
-
-	/**
-	 * Редактировать личное сообщение
-	 */
-	async updateMessage(
-		messageId: number,
-		content?: string,
-		attachments?: string[],
-		is_pinned?: boolean,
-	): Promise<Message> {
-		const { data } = await api.put<Message>(`/chat/messages/${messageId}`, {
-			content,
-			attachments,
-			is_pinned,
-		});
-		return data;
-	}
-
-	/**
-	 * Редактировать групповое сообщение
-	 */
-	async updateGroupMessage(
-		messageId: number,
-		content?: string,
-		attachments?: string[],
-		is_pinned?: boolean,
-	): Promise<Message> {
-		const { data } = await api.put<Message>(
-			`/chat/workspace-chat/messages/${messageId}`, // эндпоинт на беке остался такой пока что (псевдоним) или нужно обновить
-			{
-				content,
-				attachments,
-				is_pinned,
-			},
-		);
-		return data;
-	}
-
-	/**
-	 * Удалить личное сообщение
-	 */
-	async deleteMessage(messageId: number): Promise<void> {
-		await api.delete(`/chat/messages/${messageId}`);
-	}
-
-	/**
-	 * Удалить групповое сообщение
-	 */
-	async deleteGroupMessage(messageId: number): Promise<void> {
-		await api.delete(`/chat/workspace-chat/messages/${messageId}`); // аналогично
-	}
-
-	/**
-	 * Загрузить файл
-	 */
-	async uploadFile(formData: FormData): Promise<{ url: string }> {
-		const { data } = await api.post<{ url: string }>(
-			"/chat/upload",
-			formData,
-			{
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-			},
-		);
-		return data;
-	}
-
-	/**
-	 * Получить историю группового чата
-	 */
-	async getGroupHistory(
-		chatId: number,
-		limit = 50,
-		offset = 0,
-	): Promise<Message[]> {
-		const { data } = await api.get<Message[]>(
-			`/chat/messages/workspace/${chatId}`, // алиас
-			{
-				params: { limit, offset },
-			},
-		);
-		return data;
-	}
-
-	/**
-	 * Получить недавние чаты
-	 */
-	async getRecent(): Promise<ChatContact[]> {
-		const { data } = await api.get<ChatContact[]>("/chat/recent");
-		return data;
-	}
-
-	/**
-	 * Получить все чаты пользователя
-	 */
-	async getAll(): Promise<ChatContact[]> {
-		const { data } = await api.get<ChatContact[]>("/chat/all");
-		return data;
 	}
 }
 

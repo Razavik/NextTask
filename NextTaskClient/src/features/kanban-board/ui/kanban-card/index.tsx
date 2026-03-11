@@ -3,21 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Edit, Trash, MoreVertical } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import type { Task, TaskAssignee } from "@shared/types/task";
+import { formatDuration } from "@shared/lib/time";
+import { useActiveTaskTracking } from "@shared/lib/hooks/useActiveTaskTracking";
 import { EditTaskModal } from "@features/task-edit";
 import styles from "./index.module.css";
-
-const formatTime = (seconds: number): string => {
-	const pad = (num: number) => num.toString().padStart(2, "0");
-	if (seconds >= 3600) {
-		const h = Math.floor(seconds / 3600);
-		const m = Math.floor((seconds % 3600) / 60);
-		const s = seconds % 60;
-		return `${pad(h)}:${pad(m)}:${pad(s)}`;
-	}
-	const m = Math.floor(seconds / 60);
-	const s = seconds % 60;
-	return `${pad(m)}:${pad(s)}`;
-};
 
 interface KanbanCardProps {
 	task: Task;
@@ -66,6 +55,11 @@ const KanbanCard: FC<KanbanCardProps> = ({
 	const openDetails = () => {
 		navigate(`/workspaces/workspace/${workspaceId}/tasks/${task.id}`);
 	};
+
+	const { displaySeconds, isActiveTracking } = useActiveTaskTracking(
+		task.id,
+		task.time_spent || 0,
+	);
 
 	const handleDelete = (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -138,7 +132,15 @@ const KanbanCard: FC<KanbanCardProps> = ({
 								{task.priority}
 							</span>
 							<span className={styles.timeSpent}>
-								Затрачено: {formatTime(task.time_spent || 0)}
+								<span
+									className={`${styles.timeValue} ${
+										isActiveTracking
+											? styles.timeValueActive
+											: ""
+									}`}
+								>
+									Затрачено: {formatDuration(displaySeconds)}
+								</span>
 							</span>
 						</div>
 
@@ -165,9 +167,7 @@ const KanbanCard: FC<KanbanCardProps> = ({
 															assignee.email ??
 															"Аватар"
 														}
-														className={
-															styles.avatarImg
-														}
+														className={styles.avatarImg}
 													/>
 												) : (
 													(
@@ -212,9 +212,7 @@ const KanbanCard: FC<KanbanCardProps> = ({
 							className={`${styles.dueDate} ${isOverdue ? styles.overdueDueDate : ""}`}
 						>
 							Дедлайн:{" "}
-							{new Date(task.due_date).toLocaleDateString(
-								"ru-RU",
-							)}
+							{new Date(task.due_date).toLocaleDateString("ru-RU")}
 						</div>
 					)}
 				</div>

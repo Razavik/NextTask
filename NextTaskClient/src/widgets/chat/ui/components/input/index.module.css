@@ -8,6 +8,7 @@
 	bottom: 0;
 	right: 0;
 	left: 0;
+	z-index: 1001;
 }
 
 .editBar {
@@ -15,7 +16,7 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 8px 16px;
-	background: color-mix(in srgb, var(--surface-muted) 50%, transparent);
+	background: color-mix(in srgb, var(--surface-muted) 90%, transparent);
 	border-radius: 16px 16px 0 0;
 	margin-bottom: -12px;
 	z-index: 0;

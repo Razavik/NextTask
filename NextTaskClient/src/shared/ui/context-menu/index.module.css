@@ -34,7 +34,7 @@
 
 .menuContainer {
 	position: absolute;
-	bottom: 105%;
+	top: calc(100% + 6px);
 	left: -70px;
 	z-index: 1000;
 	min-width: 160px;
@@ -42,7 +42,11 @@
 	border: 1px solid var(--input-border-color);
 	border-radius: 8px;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-	margin-top: 4px;
+}
+
+.menuContainer.openUpward {
+	top: auto;
+	bottom: calc(100% + 6px);
 }
 
 [class*="messageOther"] .menuContainer {

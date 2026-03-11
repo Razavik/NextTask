@@ -1,7 +1,5 @@
-import { FC, useEffect, useState } from "react";
-import { profileService } from "@entities/user";
+import { FC, useState, useEffect } from "react";
 import {
-	collectCurrentUserSettings,
 	DEFAULT_NOTIFICATION_SETTINGS,
 	NOTIFICATION_SETTINGS_STORAGE_KEY,
 	type NotificationSettingsState,
@@ -10,6 +8,7 @@ import {
 } from "@shared/lib/settings";
 import styles from "./index.module.css";
 import Switch from "@shared/ui/switch";
+import { useSettingsSync } from "@shared/hooks/useSettingsSync";
 
 interface NotificationSwitchProps {
 	title: string;
@@ -49,6 +48,8 @@ const SettingsNotifications: FC = () => {
 		DEFAULT_NOTIFICATION_SETTINGS,
 	);
 
+	const { syncSettings } = useSettingsSync();
+
 	useEffect(() => {
 		setSettings(
 			readStoredSettings(
@@ -60,25 +61,20 @@ const SettingsNotifications: FC = () => {
 
 	useEffect(() => {
 		writeStoredSettings(NOTIFICATION_SETTINGS_STORAGE_KEY, settings);
+		syncSettings({ notifications: settings });
 	}, [settings]);
 
 	const handleEmailToggle = (checked: boolean) => {
 		const next = { ...settings, emailNotifications: checked };
 		setSettings(next);
-		void profileService.updateSettings({
-			...collectCurrentUserSettings(),
-			notifications: next,
-		});
+		void syncSettings({ notifications: next });
 	};
 
 	const handlePushToggle = async (checked: boolean) => {
 		if (!checked) {
 			const next = { ...settings, pushNotifications: false };
 			setSettings(next);
-			void profileService.updateSettings({
-				...collectCurrentUserSettings(),
-				notifications: next,
-			});
+			void syncSettings({ notifications: next });
 			return;
 		}
 
@@ -90,10 +86,7 @@ const SettingsNotifications: FC = () => {
 		if (Notification.permission === "granted") {
 			const next = { ...settings, pushNotifications: true };
 			setSettings(next);
-			void profileService.updateSettings({
-				...collectCurrentUserSettings(),
-				notifications: next,
-			});
+			void syncSettings({ notifications: next });
 			return;
 		}
 
@@ -107,14 +100,8 @@ const SettingsNotifications: FC = () => {
 			...settings,
 			pushNotifications: permission === "granted",
 		};
-		setSettings((prev) => ({
-			...prev,
-			pushNotifications: permission === "granted",
-		}));
-		void profileService.updateSettings({
-			...collectCurrentUserSettings(),
-			notifications: next,
-		});
+		setSettings(next);
+		void syncSettings({ notifications: next });
 	};
 
 	const pushCaption = !("Notification" in window)

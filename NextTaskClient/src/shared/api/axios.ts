@@ -3,10 +3,10 @@ import { useAuthStore } from "@entities/user";
 
 /**
  * Общий экземпляр axios с базовым URL на FastAPI-сервер.
- * URL берётся из переменной окружения VITE_API_URL или по умолчанию http://localhost:8000
+ * URL берётся из переменной окружения VITE_API_URL
  */
 const api = axios.create({
-	baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8000",
+	baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Создаем interceptor для добавления токена в заголовки
@@ -101,4 +101,5 @@ api.interceptors.response.use(
 	},
 );
 
+export { api };
 export default api;

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { chatService, type ActiveChat, type ChatContact } from "@entities/chat";
-import type { Message } from "@shared/types/message";
 import { createMessageToast } from "@shared/model/toastStore";
+import type { Message } from "@shared/types/message";
 
 interface UseChatNotificationsOptions {
 	authToken: string | null;
@@ -47,7 +47,32 @@ export const useChatNotifications = ({
 
 		// Дедупл. тостов на уровне контейнера (короткое окно)
 		const recentRef = new Map<string, number>();
-		const TTL = 4000;
+		const TTL = 1500;
+
+		const normalizeMessageText = (value: unknown) => {
+			if (typeof value === "string") {
+				return value;
+			}
+
+			if (value && typeof value === "object") {
+				if ("text" in value && typeof value.text === "string") {
+					return value.text;
+				}
+
+				if ("content" in value && typeof value.content === "string") {
+					return value.content;
+				}
+
+				try {
+					return JSON.stringify(value);
+				} catch {
+					return "";
+				}
+			}
+
+			return "";
+		};
+
 		const makeKey = (m: Message) =>
 			m.chat_id
 				? `chat|${m.chat_id}|${m.sender_id}|${m.content}`
@@ -94,14 +119,14 @@ export const useChatNotifications = ({
 				senderName =
 					m.sender?.name || m.sender?.email || "Пользователь";
 				senderAvatar = m.sender?.avatar;
-				messageText = m.content || "";
+				messageText = normalizeMessageText(m.content);
 			} else {
 				// Личный чат
 				contactId = `user-${m.sender_id === currentUserId ? m.receiver_id : m.sender_id}`;
 				senderName =
 					m.sender?.name || m.sender?.email || "Пользователь";
 				senderAvatar = m.sender?.avatar;
-				messageText = m.content || "";
+				messageText = normalizeMessageText(m.content);
 			}
 
 			// Если нет текста и нет вложений, пропускаем (чтобы избежать ошибки length of undefined)
