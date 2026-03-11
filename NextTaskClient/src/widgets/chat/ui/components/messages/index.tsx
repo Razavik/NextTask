@@ -1,4 +1,4 @@
-import {
+﻿import {
 	FC,
 	RefObject,
 	useEffect,
@@ -18,11 +18,20 @@ import {
 	Reply,
 	Pin,
 	PinOff,
+	Check,
+	CheckCheck,
+	ArrowDown,
 } from "lucide-react";
 import type { Message } from "@shared/types/message";
+import {
+	useToastStore,
+	createSuccessToast,
+	createErrorToast,
+} from "@shared/model/toastStore";
 
 export interface MessagesProps {
 	messages: Message[];
+	pinnedMessage: Message | null;
 	isLoading: boolean;
 	currentUserId?: number;
 	activeChat: { name: string; avatar?: string } | null;
@@ -31,6 +40,15 @@ export interface MessagesProps {
 	onDelete?: (msgId: number, isGroup: boolean) => void;
 	onReply?: (msg: Message) => void;
 	onTogglePin?: (msg: Message) => void;
+	onLoadMore?: () => void;
+	onLoadMoreBottom?: () => void;
+	onJumpToMessage?: (messageId: number) => void;
+	onResetJump?: () => void;
+	isLoadingMore?: boolean;
+	isLoadingMoreBottom?: boolean;
+	hasMore?: boolean;
+	hasMoreBottom?: boolean;
+	isJumped?: boolean;
 }
 
 const MessageItem: FC<{
@@ -41,6 +59,7 @@ const MessageItem: FC<{
 	onDelete?: (msgId: number, isGroup: boolean) => void;
 	onReply?: (msg: Message) => void;
 	onTogglePin?: (msg: Message) => void;
+	onJumpToMessage?: (messageId: number) => void;
 	positionInGroup?: "top" | "middle" | "bottom" | "single";
 }> = ({
 	msg,
@@ -50,9 +69,13 @@ const MessageItem: FC<{
 	onDelete,
 	onReply,
 	onTogglePin,
+	onJumpToMessage,
 	positionInGroup = "single",
 }) => {
 	const isGroupMsg = msg.chat_id != null;
+	const isPendingMessage = msg.id > 1_000_000_000_000;
+	const isReadByPeer = !isGroupMsg && isOwn && !!msg.is_read;
+	const addToast = useToastStore((state) => state.addToast);
 	const textRef = useRef<HTMLDivElement>(null);
 	const [stackMeta, setStackMeta] = useState(true);
 	const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
@@ -84,46 +107,74 @@ const MessageItem: FC<{
 	}, []);
 
 	// Опции контекстного меню
-	const menuOptions = [
-		{
-			value: "reply",
-			label: "Ответить",
-			icon: <Reply size={14} />,
-		},
-		{
-			value: "copy",
-			label: "Копировать",
-			icon: <Copy size={14} />,
-		},
-		{
-			value: "pin",
-			label: msg.is_pinned ? "Открепить" : "Закрепить",
-			icon: msg.is_pinned ? <PinOff size={14} /> : <Pin size={14} />,
-		},
-		...(isOwn
-			? [
-					{
-						value: "edit",
-						label: "Редактировать",
-						icon: <Edit size={14} />,
-					},
-					{
-						value: "delete",
-						label: "Удалить",
-						icon: <Trash2 size={14} />,
-						danger: true,
-					},
-				]
-			: []),
-	];
-
-	const handleMenuAction = (action: string) => {
+	const menuOptions = isPendingMessage
+		? [
+				{
+					value: "pending",
+					label: "Дождитесь отправки сообщения",
+				},
+			]
+		: [
+				{
+					value: "reply",
+					label: "Ответить",
+					icon: <Reply size={14} />,
+				},
+				{
+					value: "copy",
+					label: "Копировать",
+					icon: <Copy size={14} />,
+				},
+				{
+					value: "pin",
+					label: msg.is_pinned ? "Открепить" : "Закрепить",
+					icon: msg.is_pinned ? (
+						<PinOff size={14} />
+					) : (
+						<Pin size={14} />
+					),
+				},
+				...(isOwn
+					? [
+							{
+								value: "edit",
+								label: "Редактировать",
+								icon: <Edit size={14} />,
+							},
+							{
+								value: "delete",
+								label: "Удалить",
+								icon: <Trash2 size={14} />,
+								danger: true,
+							},
+						]
+					: []),
+			];
+	const handleMenuAction = async (action: string) => {
+		if (isPendingMessage) {
+			return;
+		}
 		switch (action) {
 			case "reply":
 				onReply?.(msg);
 				break;
 			case "copy":
-				navigator.clipboard.writeText(msg.content);
+				try {
+					await navigator.clipboard.writeText(msg.content);
+					addToast(
+						createSuccessToast(
+							"Скопировано",
+							"Сообщение скопировано",
+						),
+					);
+				} catch {
+					addToast(
+						createErrorToast(
+							"Ошибка",
+							"Не удалось скопировать сообщение",
+						),
+					);
+				}
 				break;
 			case "pin":
 				onTogglePin?.(msg);
@@ -150,6 +201,7 @@ const MessageItem: FC<{
 	const hideAvatar =
 		!isOwn && (positionInGroup === "top" || positionInGroup === "middle");
 	const showSender =
+		isGroupMsg &&
 		!isOwn &&
 		msg.sender &&
 		(positionInGroup === "top" || positionInGroup === "single");
@@ -199,7 +251,12 @@ const MessageItem: FC<{
 			<div className={styles.messageBody}>
 				<div className={styles.messageBox}>
 					{msg.replied_message && (
-						<div className={styles.repliedMessage}>
+						<div
+							className={styles.repliedMessage}
+							onClick={() =>
+								onJumpToMessage?.(msg.replied_message!.id)
+							}
+						>
 							<div className={styles.repliedLine}></div>
 							<div className={styles.repliedContent}>
 								<div className={styles.repliedSender}>
@@ -270,6 +327,16 @@ const MessageItem: FC<{
 								)}
 							</div>
 							<div className={styles.messageMeta}>
+								{isPendingMessage && (
+									<span
+										className={styles.pendingBadge}
+										title="Сообщение отправляется"
+									>
+										<span
+											className={styles.pendingSpinner}
+										/>
+									</span>
+								)}
 								{msg.is_edited && (
 									<span className={styles.editedLabel}>
 										изменено
@@ -283,6 +350,22 @@ const MessageItem: FC<{
 										minute: "2-digit",
 									})}
 								</span>
+								{!isGroupMsg && isOwn && !isPendingMessage && (
+									<span
+										className={`${styles.readStatus} ${isReadByPeer ? styles.readStatusDone : ""}`}
+										title={
+											isReadByPeer
+												? "Прочитано"
+												: "Доставлено"
+										}
+									>
+										{isReadByPeer ? (
+											<CheckCheck size={14} />
+										) : (
+											<Check size={14} />
+										)}
+									</span>
+								)}
 							</div>
 						</div>
 					)}
@@ -300,6 +383,7 @@ const MessageItem: FC<{
 
 const Messages: FC<MessagesProps> = ({
 	messages,
+	pinnedMessage,
 	isLoading,
 	currentUserId,
 	activeChat,
@@ -308,8 +392,23 @@ const Messages: FC<MessagesProps> = ({
 	onDelete,
 	onReply,
 	onTogglePin,
+	onLoadMore,
+	onLoadMoreBottom,
+	onJumpToMessage,
+	onResetJump,
+	isLoadingMore,
+	isLoadingMoreBottom,
+	hasMore,
+	hasMoreBottom,
+	isJumped,
 }) => {
 	const messageRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const bottomLoadTriggeredRef = useRef(false);
+	const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+	const [pendingScrollMessageId, setPendingScrollMessageId] = useState<
+		number | null
+	>(null);
 
 	const setMessageRef = (id: number) => (el: HTMLDivElement | null) => {
 		messageRefs.current.set(id, el);
@@ -319,9 +418,30 @@ const Messages: FC<MessagesProps> = ({
 		const el = messageRefs.current.get(id);
 		if (el) {
 			el.scrollIntoView({ behavior: "auto", block: "center" });
+			// Подсветка сообщения
+			el.style.backgroundColor = "var(--hover-bg)";
+			el.style.transition = "background-color 0.3s";
+			setTimeout(() => {
+				el.style.backgroundColor = "transparent";
+			}, 1500);
+		} else if (onJumpToMessage) {
+			setPendingScrollMessageId(id);
+			onJumpToMessage(id);
 		}
 	};
-	// Функция для форматирования даты разделителя
+
+	useEffect(() => {
+		if (pendingScrollMessageId == null || isLoading) return;
+		const el = messageRefs.current.get(pendingScrollMessageId);
+		if (!el) return;
+		el.scrollIntoView({ behavior: "auto", block: "center" });
+		el.style.backgroundColor = "var(--hover-bg)";
+		el.style.transition = "background-color 0.3s";
+		setTimeout(() => {
+			el.style.backgroundColor = "transparent";
+		}, 1500);
+		setPendingScrollMessageId(null);
+	}, [messages, isLoading, pendingScrollMessageId]);
 	const formatDateSeparator = (dateStr: string) => {
 		const date = new Date(dateStr);
 		const today = new Date();
@@ -344,16 +464,51 @@ const Messages: FC<MessagesProps> = ({
 		}
 	};
 
-	// Получаем список закрепленных сообщений
-	const pinnedMessages = messages.filter((msg) => msg.is_pinned);
+	const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+		const target = e.currentTarget;
+		if (target.scrollTop <= 50 && hasMore && !isLoadingMore && onLoadMore) {
+			onLoadMore();
+		}
+		const distanceToBottom =
+			target.scrollHeight - target.scrollTop - target.clientHeight;
+		setShowScrollToBottom(distanceToBottom > 120);
+		if (distanceToBottom > 120) {
+			bottomLoadTriggeredRef.current = false;
+		}
+		if (
+			distanceToBottom <= 50 &&
+			isJumped &&
+			hasMoreBottom &&
+			!isLoadingMoreBottom &&
+			onLoadMoreBottom &&
+			!bottomLoadTriggeredRef.current
+		) {
+			bottomLoadTriggeredRef.current = true;
+			onLoadMoreBottom();
+		}
+	};
+
+	useEffect(() => {
+		if (!isJumped) {
+			bottomLoadTriggeredRef.current = false;
+		}
+	}, [isJumped]);
+
+	const handleScrollToBottom = () => {
+		if (isJumped && onResetJump) {
+			onResetJump();
+			return;
+		}
+
+		endRef.current?.scrollIntoView({ behavior: "smooth" });
+	};
 
 	return (
 		<div className={styles.messagesContainer}>
-			{/* Баннер закрепленных сообщений */}
-			{pinnedMessages.length > 0 && (
+			{pinnedMessage && (
 				<div
 					className={styles.pinnedBanner}
-					onClick={() => scrollToMessage(pinnedMessages[0].id)}
+					onClick={() => scrollToMessage(pinnedMessage.id)}
 				>
 					<Pin size={16} className={styles.pinnedIcon} />
 					<div className={styles.pinnedContent}>
@@ -361,17 +516,16 @@ const Messages: FC<MessagesProps> = ({
 							Закрепленное сообщение
 						</span>
 						<span className={styles.pinnedText}>
-							{pinnedMessages[0].content.length > 50
-								? pinnedMessages[0].content.substring(0, 50) +
-									"..."
-								: pinnedMessages[0].content || "Вложение"}
+							{pinnedMessage.content.length > 50
+								? pinnedMessage.content.substring(0, 50) + "..."
+								: pinnedMessage.content || "Вложение"}
 						</span>
 					</div>
 					<button
 						className={styles.unpinBtn}
 						onClick={(e) => {
 							e.stopPropagation();
-							onTogglePin?.(pinnedMessages[0]);
+							onTogglePin?.(pinnedMessage);
 						}}
 						title="Открепить"
 					>
@@ -380,7 +534,18 @@ const Messages: FC<MessagesProps> = ({
 				</div>
 			)}
 
-			<div className={styles.messagesArea}>
+			<div
+				ref={scrollContainerRef}
+				onScroll={handleScroll}
+				className={`${styles.messagesArea} ${
+					pinnedMessage ? styles.messagesAreaWithPinned : ""
+				}`}
+			>
+				{isLoadingMore && (
+					<div className={styles.loadingMore}>
+						<Loader size="small" />
+					</div>
+				)}
 				{isLoading ? (
 					<div className={styles.centerWrap}>
 						<div className={common.loadingState}>
@@ -398,14 +563,14 @@ const Messages: FC<MessagesProps> = ({
 					messages.map((msg, index) => {
 						const isOwn = msg.sender_id === currentUserId;
 
-						// Логика группировки сообщений
+						// Р›РѕРіРёРєР° РіСЂСѓРїРїРёСЂРѕРІРєРё СЃРѕРѕР±С‰РµРЅРёР№
 						const prevMsg = index > 0 ? messages[index - 1] : null;
 						const nextMsg =
 							index < messages.length - 1
 								? messages[index + 1]
 								: null;
 
-						// Проверка на смену дня
+						// РџСЂРѕРІРµСЂРєР° РЅР° СЃРјРµРЅСѓ РґРЅСЏ
 						const msgDate = new Date(msg.created_at);
 						const prevMsgDate = prevMsg
 							? new Date(prevMsg.created_at)
@@ -422,7 +587,7 @@ const Messages: FC<MessagesProps> = ({
 						const isSameSenderAsNext =
 							nextMsg && nextMsg.sender_id === msg.sender_id;
 
-						// Разница во времени менее 5 минут для группировки
+						// Р Р°Р·РЅРёС†Р° РІРѕ РІСЂРµРјРµРЅРё РјРµРЅРµРµ 5 РјРёРЅСѓС‚ РґР»СЏ РіСЂСѓРїРїРёСЂРѕРІРєРё
 						const isTimeCloseToPrev =
 							prevMsg &&
 							msgDate.getTime() - prevMsgDate!.getTime() <
@@ -433,7 +598,7 @@ const Messages: FC<MessagesProps> = ({
 								msgDate.getTime() <
 								5 * 60 * 1000;
 
-						// Группируем только если это тот же день
+						// Р“СЂСѓРїРїРёСЂСѓРµРј С‚РѕР»СЊРєРѕ РµСЃР»Рё СЌС‚Рѕ С‚РѕС‚ Р¶Рµ РґРµРЅСЊ
 						const isGroupedWithPrev =
 							isSameSenderAsPrev &&
 							isTimeCloseToPrev &&
@@ -473,11 +638,27 @@ const Messages: FC<MessagesProps> = ({
 									onDelete={onDelete}
 									onReply={onReply}
 									onTogglePin={onTogglePin}
+									onJumpToMessage={scrollToMessage}
 									positionInGroup={positionInGroup}
 								/>
 							</div>
 						);
 					})
+				)}
+				{isLoadingMoreBottom && (
+					<div className={styles.loadingMore}>
+						<Loader size="small" />
+					</div>
+				)}
+				{showScrollToBottom && (
+					<div className={styles.jumpResetWrap}>
+						<button
+							className={styles.jumpResetBtn}
+							onClick={handleScrollToBottom}
+						>
+							<ArrowDown size={24} />
+						</button>
+					</div>
 				)}
 				<div ref={endRef} />
 			</div>

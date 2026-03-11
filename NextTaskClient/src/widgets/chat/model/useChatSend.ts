@@ -1,6 +1,7 @@
-import { useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { chatService, type ActiveChat } from "@entities/chat";
 import type { Message } from "@shared/types/message";
+import { apiService, ApiRoute } from "@shared/api";
 
 interface User {
 	id: number;
@@ -39,6 +40,27 @@ export const useChatSend = ({
 	);
 	const [attachments, setAttachments] = useState<string[]>([]);
 	const [isUploading, setIsUploading] = useState(false);
+	const [deleteTarget, setDeleteTarget] = useState<{
+		msgId: number;
+		isGroup: boolean;
+	} | null>(null);
+	const [isDeleting, setIsDeleting] = useState(false);
+	const typingTimeoutRef = useRef<number | null>(null);
+
+	const buildReplyRef = () =>
+		replyingToMessage
+			? {
+					id: replyingToMessage.id,
+					content: replyingToMessage.content,
+					created_at: replyingToMessage.created_at,
+					sender: replyingToMessage.sender
+						? {
+								...replyingToMessage.sender,
+								name: replyingToMessage.sender.name || "",
+							}
+						: undefined,
+				}
+			: null;
 
 	const handleSend = async () => {
 		if (
@@ -52,30 +74,47 @@ export const useChatSend = ({
 			setIsSending(true);
 
 			if (editingMessage) {
-				// Редактирование
 				if (editingMessage.chat_id != null) {
-					// Групповое
-					await chatService.updateGroupMessage(
-						editingMessage.id,
-						newMessage,
-						attachments,
+					await apiService.put<
+						Message,
+						{
+							content?: string;
+							attachments?: string[];
+							is_pinned?: boolean;
+						}
+					>(
+						ApiRoute.GroupChatMessageById,
+						{
+							content: newMessage,
+							attachments,
+						},
+						{ pathParams: { messageId: editingMessage.id } },
 					);
 				} else {
-					// Личное
-					await chatService.updateMessage(
-						editingMessage.id,
-						newMessage,
-						attachments,
+					await apiService.put<
+						Message,
+						{
+							content?: string;
+							attachments?: string[];
+							is_pinned?: boolean;
+						}
+					>(
+						ApiRoute.ChatMessageById,
+						{
+							content: newMessage,
+							attachments,
+						},
+						{ pathParams: { messageId: editingMessage.id } },
 					);
 				}
-				// Локальное обновление происходит через WS, но можно и оптимистично обновить
+
 				setMessages((prev) =>
 					prev.map((m) =>
 						m.id === editingMessage.id
 							? {
 									...m,
 									content: newMessage,
-									attachments: attachments,
+									attachments,
 									is_edited: true,
 								}
 							: m,
@@ -83,15 +122,17 @@ export const useChatSend = ({
 				);
 				setEditingMessage(null);
 			} else {
-				// Отправка нового
 				const reply_to_id = replyingToMessage
 					? replyingToMessage.id
 					: null;
+				const replied_message = buildReplyRef();
+				const content = newMessage.trim();
+				const tempClientId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 				if (activeChat.type === "group" && activeChat.chatId) {
-					const content = newMessage.trim();
 					chatService.sendGroupMessage(
 						{
+							temp_client_id: tempClientId,
 							content,
 							attachments:
 								attachments.length > 0
@@ -102,33 +143,18 @@ export const useChatSend = ({
 						activeChat.chatId,
 					);
 
-					// Оптимистичное добавление
 					if (currentUser) {
 						const optimistic: Message = {
 							id: Date.now(),
+							temp_client_id: tempClientId,
 							chat_id: activeChat.chatId,
 							sender_id: currentUser.id,
 							is_read: 1,
 							content,
 							created_at: new Date().toISOString(),
-							attachments: attachments,
-							reply_to_id: reply_to_id,
-							replied_message: replyingToMessage
-								? {
-										id: replyingToMessage.id,
-										content: replyingToMessage.content,
-										created_at:
-											replyingToMessage.created_at,
-										sender: replyingToMessage.sender
-											? {
-													...replyingToMessage.sender,
-													name:
-														replyingToMessage.sender
-															.name || "",
-												}
-											: undefined,
-									}
-								: null,
+							attachments,
+							reply_to_id,
+							replied_message,
 							sender: {
 								id: currentUser.id,
 								name: currentUser.name || currentUser.email,
@@ -141,66 +167,53 @@ export const useChatSend = ({
 						}
 					}
 				} else if (activeChat.userId) {
-					// Личное
 					if (attachments.length > 0) {
-						// REST для вложений
-						const msg = await chatService.sendPersonalMessage({
+						const msg = await apiService.post<
+							Message,
+							{
+								receiver_id: number;
+								content: string;
+								attachments?: string[];
+								reply_to_id?: number | null;
+							}
+						>(ApiRoute.ChatMessages, {
 							receiver_id: activeChat.userId,
-							content: newMessage,
+							content,
 							attachments,
 							reply_to_id,
 						});
-						// Оптимистичное добавление не нужно, так как REST вернет сообщение, а WS может продублировать?
-						// Обычно WS шлет "new_message".
-						// Если мы добавим здесь, будет дубль при приходе от WS.
-						// Но shouldChatDedup должен справиться.
 						if (shouldAcceptMessage(msg)) {
 							setMessages((prev) => [...prev, msg]);
 						}
 					} else {
-						// Для личных сообщений без вложений через WS
-						if (
-							chatService["wsPersonal"] &&
-							chatService["wsPersonal"].readyState ===
-								WebSocket.OPEN
-						) {
-							chatService["wsPersonal"].send(
-								JSON.stringify({
-									receiver_id: activeChat.userId,
-									content: newMessage.trim(),
-									reply_to_id,
-								}),
-							);
-						}
+						const tempClientId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
-						// Оптимистичное для личных через WS
+						chatService.sendMessage({
+							type: "message",
+							receiver_id: activeChat.userId,
+							content,
+							reply_to_id,
+							temp_client_id: tempClientId,
+						} as {
+							type: "message";
+							receiver_id: number;
+							content: string;
+							reply_to_id?: number | null;
+							temp_client_id?: string;
+						});
+
 						if (currentUser) {
 							const optimistic: Message = {
 								id: Date.now(),
+								temp_client_id: tempClientId,
 								sender_id: currentUser.id,
 								receiver_id: activeChat.userId,
-								content: newMessage.trim(),
+								content,
 								is_read: 0,
 								created_at: new Date().toISOString(),
 								attachments: [],
-								reply_to_id: reply_to_id,
-								replied_message: replyingToMessage
-									? {
-											id: replyingToMessage.id,
-											content: replyingToMessage.content,
-											created_at:
-												replyingToMessage.created_at,
-											sender: replyingToMessage.sender
-												? {
-														...replyingToMessage.sender,
-														name:
-															replyingToMessage
-																.sender.name ||
-															"",
-													}
-												: undefined,
-										}
-									: null,
+								reply_to_id,
+								replied_message,
 								sender: {
 									id: currentUser.id,
 									name: currentUser.name || currentUser.email,
@@ -215,11 +228,20 @@ export const useChatSend = ({
 					}
 				}
 			}
+
 			setNewMessage("");
 			setAttachments([]);
 			setReplyingToMessage(null);
+			if (typingTimeoutRef.current) {
+				window.clearTimeout(typingTimeoutRef.current);
+				typingTimeoutRef.current = null;
+			}
+			if (activeChat.type === "group" && activeChat.chatId) {
+				chatService.sendGroupTyping(activeChat.chatId, false);
+			} else if (activeChat.userId) {
+				chatService.sendTyping(activeChat.userId, false);
+			}
 
-			// Upsert contact logic...
 			if (activeChat.type === "group" && activeChat.chatId) {
 				upsertAndTouchContact({
 					id: `chat-${activeChat.chatId}`,
@@ -268,18 +290,30 @@ export const useChatSend = ({
 		try {
 			const isPinned = !msg.is_pinned;
 			if (msg.chat_id != null) {
-				await chatService.updateGroupMessage(
-					msg.id,
-					undefined,
-					undefined,
-					isPinned,
+				await apiService.put<
+					Message,
+					{
+						content?: string;
+						attachments?: string[];
+						is_pinned?: boolean;
+					}
+				>(
+					ApiRoute.GroupChatMessageById,
+					{ is_pinned: isPinned },
+					{ pathParams: { messageId: msg.id } },
 				);
 			} else {
-				await chatService.updateMessage(
-					msg.id,
-					undefined,
-					undefined,
-					isPinned,
+				await apiService.put<
+					Message,
+					{
+						content?: string;
+						attachments?: string[];
+						is_pinned?: boolean;
+					}
+				>(
+					ApiRoute.ChatMessageById,
+					{ is_pinned: isPinned },
+					{ pathParams: { messageId: msg.id } },
 				);
 			}
 			setMessages((prev) =>
@@ -300,18 +334,44 @@ export const useChatSend = ({
 		}
 	};
 
-	const handleDelete = async (msgId: number, isGroup: boolean) => {
-		if (!confirm("Удалить сообщение?")) return;
+	const handleDelete = (msgId: number, isGroup: boolean) => {
+		setDeleteTarget({ msgId, isGroup });
+	};
+
+	const handleCancelDelete = () => {
+		if (isDeleting) return;
+		setDeleteTarget(null);
+	};
+
+	const handleConfirmDelete = async () => {
+		if (!deleteTarget) return;
 		try {
-			if (isGroup) {
-				await chatService.deleteGroupMessage(msgId);
+			setIsDeleting(true);
+			if (deleteTarget.isGroup) {
+				await apiService.delete<void>(
+					ApiRoute.GroupChatMessageById,
+					undefined,
+					{
+						pathParams: { messageId: deleteTarget.msgId },
+					},
+				);
 			} else {
-				await chatService.deleteMessage(msgId);
+				await apiService.delete<void>(
+					ApiRoute.ChatMessageById,
+					undefined,
+					{
+						pathParams: { messageId: deleteTarget.msgId },
+					},
+				);
 			}
-			// WS обновит список, но можно и локально удалить
-			setMessages((prev) => prev.filter((m) => m.id !== msgId));
+			setMessages((prev) =>
+				prev.filter((m) => m.id !== deleteTarget.msgId),
+			);
+			setDeleteTarget(null);
 		} catch (error) {
 			console.error("Ошибка удаления:", error);
+		} finally {
+			setIsDeleting(false);
 		}
 	};
 
@@ -320,7 +380,17 @@ export const useChatSend = ({
 			setIsUploading(true);
 			const formData = new FormData();
 			formData.append("file", file);
-			const data = await chatService.uploadFile(formData);
+			const data = await apiService.post<{ url: string }, FormData>(
+				ApiRoute.ChatUpload,
+				formData,
+				{
+					config: {
+						headers: {
+							"Content-Type": "multipart/form-data",
+						},
+					},
+				},
+			);
 			setAttachments((prev) => [...prev, data.url]);
 		} catch (error) {
 			console.error("Ошибка загрузки файла:", error);
@@ -340,9 +410,43 @@ export const useChatSend = ({
 		}
 	};
 
+	const handleMessageChange = (value: string) => {
+		setNewMessage(value);
+		if (!activeChat) return;
+
+		const isTyping = value.trim().length > 0;
+		if (activeChat.type === "group" && activeChat.chatId) {
+			chatService.sendGroupTyping(activeChat.chatId, isTyping);
+		} else if (activeChat.userId) {
+			chatService.sendTyping(activeChat.userId, isTyping);
+		}
+
+		if (typingTimeoutRef.current) {
+			window.clearTimeout(typingTimeoutRef.current);
+		}
+
+		typingTimeoutRef.current = window.setTimeout(() => {
+			if (!activeChat) return;
+			if (activeChat.type === "group" && activeChat.chatId) {
+				chatService.sendGroupTyping(activeChat.chatId, false);
+			} else if (activeChat.userId) {
+				chatService.sendTyping(activeChat.userId, false);
+			}
+		}, 1200);
+	};
+
+	useEffect(
+		() => () => {
+			if (typingTimeoutRef.current) {
+				window.clearTimeout(typingTimeoutRef.current);
+			}
+		},
+		[],
+	);
+
 	return {
 		newMessage,
-		setNewMessage,
+		setNewMessage: handleMessageChange,
 		isSending,
 		handleSend,
 		handleKeyDown,
@@ -356,6 +460,10 @@ export const useChatSend = ({
 		handleCancelReply,
 		handleTogglePin,
 		handleDelete,
+		handleCancelDelete,
+		handleConfirmDelete,
+		deleteTarget,
+		isDeleting,
 		handleUpload,
 		removeAttachment,
 	};

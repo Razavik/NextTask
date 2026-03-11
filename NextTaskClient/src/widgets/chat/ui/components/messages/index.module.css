@@ -78,11 +78,23 @@
 	flex: 1;
 	overflow-y: auto;
 	padding: 16px;
-	padding-top: 60px; /* Отступ для баннера закрепленных сообщений */
 	display: flex;
 	flex-direction: column;
 	background: transparent;
 	padding-bottom: 140px;
+	overflow-anchor: auto;
+}
+
+.loadingMore {
+	display: flex;
+	justify-content: center;
+	padding: 12px 0;
+	margin-bottom: 8px;
+	overflow-anchor: none;
+}
+
+.messagesAreaWithPinned {
+	padding-top: 60px; /* Отступ для баннера закрепленных сообщений */
 }
 
 .dateSeparator {
@@ -90,6 +102,35 @@
 	justify-content: center;
 	margin: 20px 0 12px;
 	width: 100%;
+}
+
+.jumpResetWrap {
+	position: fixed;
+	bottom: 140px;
+	right: 16px;
+	z-index: 10;
+	display: flex;
+	justify-content: center;
+}
+
+.jumpResetBtn {
+	background: var(--card-bg);
+	border: 1px solid var(--border-subtle);
+	color: var(--primary-color);
+	padding: 8px;
+	border-radius: 30px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.jumpResetBtn:hover {
+	transform: translateY(-2px);
+}
+
+.dateSeparator:first-of-type {
+	margin-top: 0;
 }
 
 .dateSeparator span {
@@ -118,6 +159,7 @@
 .messagesArea::-webkit-scrollbar-track {
 	background: transparent;
 	margin-bottom: 140px;
+	margin-top: 8px;
 }
 
 .messagesArea::-webkit-scrollbar-thumb {
@@ -136,7 +178,6 @@
 	position: relative;
 	margin-bottom: 12px;
 }
-
 .message.grouped {
 	margin-bottom: 4px;
 }
@@ -456,4 +497,47 @@
 
 .messageOwn .editedLabel {
 	color: rgba(255, 255, 255, 0.8);
+}
+
+.readStatus {
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: -0.04em;
+	color: rgba(255, 255, 255, 0.72);
+}
+
+.readStatusDone {
+	color: #d8f3ff;
+}
+
+.pendingBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 14px;
+	height: 14px;
+}
+
+.pendingSpinner {
+	width: 12px;
+	height: 12px;
+	border: 2px solid
+		color-mix(in srgb, var(--text-color-soft) 35%, transparent);
+	border-top-color: var(--text-color-soft);
+	border-radius: 50%;
+	animation: messagePendingSpin 0.9s linear infinite;
+}
+
+.messageOwn .pendingSpinner {
+	border-color: rgba(255, 255, 255, 0.35);
+	border-top-color: #fff;
+}
+
+@keyframes messagePendingSpin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
 }
